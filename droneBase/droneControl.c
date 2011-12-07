@@ -66,10 +66,10 @@ void port_setup(void)
 {
 	PORTB = 0b00001100;	/* enable pull-up for SETUP inputs */
 /* (label 13 on Arduino) comes with a LED on this pin */
-#define	LEDON()	PORTB |=  _BV(7)
-#define	LEDOF()	PORTB &= ~_BV(7)
-#define	LEDTG()	PORTB ^=  _BV(7)
-	DDRB  |= _BV(7);	/* output */
+#define	LEDON()	PORTB |=  _BV(5)
+#define	LEDOF()	PORTB &= ~_BV(5)
+#define	LEDTG()	PORTB ^=  _BV(5)
+	DDRB  |= _BV(5);	/* output */
 
 /* (label 11 on Arduino) ground for RX debug with terminal emulator */
 /* (label 10 on Arduino) ground for RX debug with terminal emulator */
@@ -1444,9 +1444,9 @@ void dr_loop(void)
 }
 
 int main(void)
-
 {
 	u08_t	i, j, k;
+
 	bzero(&gl,sizeof(gl));
 	for (EECR = 0; gl.eewen < NEL(gl.eedat); gl.eewen++) {
 		EEAR = (int)gl.eewen;
@@ -1477,7 +1477,6 @@ int main(void)
 	gl.rxs.chn[S_RUDD].dbn = MS2TIC(0.04);
 	gl.rxs.chn[S_GEAR].dbn = MS2TIC(0.20);
 	gl.rxs.chn[S_AUX1].dbn = MS2TIC(0.20);
-
 	/* setup PCMSK */
 	PCMSK2 = 0;
 	PCMSK2 |= gl.rxs.chn[S_THRO].msk;
@@ -1511,7 +1510,7 @@ int main(void)
 	/* turn ssi receiver on */
 	PCMSK1 |= SSI_RXI;
 	PCICR  |= _BV(PCIE1);
-  
+
 	if (SETUP()) {
 		/* wait for start character from user */
 		while (sio_rc() != C_STRT) blip(5), ms_dly(1000);
@@ -1541,7 +1540,7 @@ int main(void)
 
 	/* start shell on drone */
 	sio_sc('\r'); ms_dly(100); sio_rf();
-	sio_sc('\r'); ms_dly( 50); sio_rf(); /* do it twice... */
+	sio_sc('\r'); ms_dly(50); sio_rf(); /* do it twice... */
 
 	if ((UCSR0A & _BV(U2X0))) { /* is using double speed on serial transmitter */
 		/* -> change baudrate to 38400 */
