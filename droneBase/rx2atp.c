@@ -66,10 +66,11 @@ void port_setup(void)
 {
 	PORTB = 0b00001100;	/* enable pull-up for SETUP inputs */
 /* (label 13 on Arduino) comes with a LED on this pin */
+
 #define	LEDON()	PORTB |=  _BV(7)
 #define	LEDOF()	PORTB &= ~_BV(7)
 #define	LEDTG()	PORTB ^=  _BV(7)
-	DDRB  |= _BV(7);	/* output */
+DDRB |= _BV(7);
 
 /* (label 11 on Arduino) ground for RX debug with terminal emulator */
 /* (label 10 on Arduino) ground for RX debug with terminal emulator */
@@ -353,8 +354,8 @@ void ms_dly(int ndcnt)
 	int	i;
 
 	for (; ndcnt; ndcnt--)
-		for (i = gl.dcnt; --i >= 0; )
-			__asm__ __volatile__ (" nop");
+		for (i = (16000000/16000); --i >= 0; ) // Changed this to i = 1000 so that this reflects 1ms... N^2 runtime. 
+			__asm__ __volatile__ ("nop\n"); // Added \n flush char
 }
 
 void msdly_cali(void)
@@ -1448,6 +1449,19 @@ int main(void)
 {
 	u08_t	i, j, k;
 	bzero(&gl,sizeof(gl));
+
+
+//////////      TESTING
+        port_setup();
+        msdly_cali();
+        while(1){
+          LEDTG();
+          ms_dly(1000);
+        }
+        
+/// END TESTING
+        
+        
 	for (EECR = 0; gl.eewen < NEL(gl.eedat); gl.eewen++) {
 		EEAR = (int)gl.eewen;
 		EECR |= _BV(EERE);
