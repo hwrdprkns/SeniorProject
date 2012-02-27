@@ -72,8 +72,8 @@ private static void computeDistanceAndBearing(double lat1, double lon1,
 
         double L = lon2 - lon1;
         double A = 0.0;
-        double U1 = Math.atan((1.0 - f) * tan(lat1));
-        double U2 = Math.atan((1.0 - f) * tan(lat2));
+        double U1 = atan((1.0 - f) * tan(lat1));
+        double U2 = atan((1.0 - f) * tan(lat2));
 
         double cosU1 = cos(U1);
         double cosU2 = cos(U2);
@@ -133,7 +133,7 @@ private static void computeDistanceAndBearing(double lat1, double lon1,
                   (-1.0 + 2.0 * cos2SM * cos2SM))); // (11)
 
             double delta = (lambda - lambdaOrig) / lambda;
-            if (Math.abs(delta) < 1.0e-12) {
+            if (abs(delta) < 1.0e-12) {
                 break;
             }
         }
