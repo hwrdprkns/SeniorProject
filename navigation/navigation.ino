@@ -1,5 +1,6 @@
 #include <ArduinoUnit.h>
 #include <WayPoint.h>
+#include <math.h>
 
 /**
 
@@ -26,7 +27,7 @@ void setup()
 void loop()
 {
   // ...
-}
+}ls
 
 boolean checkSanity(){
   
@@ -71,13 +72,13 @@ private static void computeDistanceAndBearing(double lat1, double lon1,
 
         double L = lon2 - lon1;
         double A = 0.0;
-        double U1 = Math.atan((1.0 - f) * Math.tan(lat1));
-        double U2 = Math.atan((1.0 - f) * Math.tan(lat2));
+        double U1 = Math.atan((1.0 - f) * tan(lat1));
+        double U2 = Math.atan((1.0 - f) * tan(lat2));
 
-        double cosU1 = Math.cos(U1);
-        double cosU2 = Math.cos(U2);
-        double sinU1 = Math.sin(U1);
-        double sinU2 = Math.sin(U2);
+        double cosU1 = cos(U1);
+        double cosU2 = cos(U2);
+        double sinU1 = sin(U1);
+        double sinU2 = sin(U2);
         double cosU1cosU2 = cosU1 * cosU2;
         double sinU1sinU2 = sinU1 * sinU2;
 
@@ -93,14 +94,14 @@ private static void computeDistanceAndBearing(double lat1, double lon1,
         double lambda = L; // initial guess
         for (int iter = 0; iter < MAXITERS; iter++) {
             double lambdaOrig = lambda;
-            cosLambda = Math.cos(lambda);
-            sinLambda = Math.sin(lambda);
+            cosLambda = cos(lambda);
+            sinLambda = sin(lambda);
             double t1 = cosU2 * sinLambda;
             double t2 = cosU1 * sinU2 - sinU1 * cosU2 * cosLambda;
             double sinSqSigma = t1 * t1 + t2 * t2; // (14)
-            sinSigma = Math.sqrt(sinSqSigma);
+            sinSigma = sqrt(sinSqSigma);
             cosSigma = sinU1sinU2 + cosU1cosU2 * cosLambda; // (15)
-            sigma = Math.atan2(sinSigma, cosSigma); // (16)
+            sigma = atan2(sinSigma, cosSigma); // (16)
             double sinAlpha = (sinSigma == 0) ? 0.0 :
                 cosU1cosU2 * sinLambda / sinSigma; // (17)
             cosSqAlpha = 1.0 - sinAlpha * sinAlpha;
