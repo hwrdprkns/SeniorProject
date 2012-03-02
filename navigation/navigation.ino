@@ -31,7 +31,7 @@ void loop()
 
 boolean checkSanity(){
   
-
+  double distanceSanity = 999;
   //double distanceSanity = computeDistanceAndBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS],LONGITUDES[NUMBER_OF_WAYPOINTS]);
   
   Serial.write("3");
