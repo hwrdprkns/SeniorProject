@@ -1,5 +1,4 @@
-#include <ArduinoUnit.h>
-#include <WayPoint.h>
+#include "WayPoint.h"
 #include <math.h>
 
 /**
@@ -11,39 +10,35 @@ calculateWaypoints
 
 **/
 
-private static double LATITUDES[] = {42.408083,42.40798,42.407934}
-private static double LONGITUDES[] = {-71.116326,-71.116253, -71.115977}
-private static int NUMBER_OF_WAYPOINTS = 3;
+double LATITUDES[] = {42.408083,42.40798,42.407934};
+double LONGITUDES[] = {-71.116326,-71.116253, -71.115977};
+int NUMBER_OF_WAYPOINTS = 3;
 
 
 
 void setup()
 {
-  checkSanity(); 
+  Serial.begin(9600);
+  
 }
 
 
 
 void loop()
 {
-  // ...
-}ls
+  checkSanity();
+}
 
 boolean checkSanity(){
   
+
+  //double distanceSanity = computeDistanceAndBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS],LONGITUDES[NUMBER_OF_WAYPOINTS]);
   
-  boolean distanceSanity = computeDistanceAndBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS],LONGITUDES[NUMBER_OF_WAYPOINTS]);
-  
+  Serial.write("3");
   
   //boolean droneSanity = checkDroneSanity();
   
-  return distanceSanity;
-}
-
-boolean distanceSanity(){
-  
-  
-  
+  return (distanceSanity < 1000);
 }
 
 
@@ -53,17 +48,17 @@ boolean distanceSanity(){
      * WGS84 ellipsoid.     
 **/
 
-private static void computeDistanceAndBearing(double lat1, double lon1,
+double computeDistanceAndBearing(double lat1, double lon1,
         double lat2, double lon2) {
         // Based on http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
         // using the "Inverse Formula" (section 4)
 
         int MAXITERS = 20;
         // Convert lat/long to radians
-        lat1 *= Math.PI / 180.0;
-        lat2 *= Math.PI / 180.0;
-        lon1 *= Math.PI / 180.0;
-        lon2 *= Math.PI / 180.0;
+        lat1 *= PI / 180.0;
+        lat2 *= PI / 180.0;
+        lon1 *= PI / 180.0;
+        lon2 *= PI / 180.0;
 
         double a = 6378137.0; // WGS84 major axis
         double b = 6356752.3142; // WGS84 semi-major axis
@@ -138,7 +133,9 @@ private static void computeDistanceAndBearing(double lat1, double lon1,
             }
         }
 
-        float distance = (float) (b * A * (sigma - deltaSigma));
+      float distance = (float) (b * A * (sigma - deltaSigma));
+      
+      return ((double)distance);
  }
 
 
