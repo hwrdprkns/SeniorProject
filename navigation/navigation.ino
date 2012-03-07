@@ -36,9 +36,6 @@ void loop()
 
 void navigatePath(int state, double previousDistance){
   
-  double currentLatitude = getLatitudeFromGPS();
-  double currentLongitude = getLongitudeFromGPS();
-  
   double destinationLat = LATITUDES[state];
   double destinationLong = LONGITUDES[state];
   
