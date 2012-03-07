@@ -6,7 +6,7 @@
      * WGS84 ellipsoid.     
 **/
 
-double WayPoint::computeDistanceAndBearing(double lat1, double lon1,
+double WayPoint::computeDistance(double lat1, double lon1,
         double lat2, double lon2) {
         // Based on http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
         // using the "Inverse Formula" (section 4)
