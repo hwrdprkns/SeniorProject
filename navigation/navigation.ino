@@ -44,7 +44,7 @@ boolean checkSanity(){
 
 /**
      * Computes the approximate distance in meters between two
-     * locations.Distance and bearing are defined using the
+     * locations. Distance and bearing are defined using the
      * WGS84 ellipsoid.     
 **/
 
@@ -138,7 +138,7 @@ double computeDistanceAndBearing(double lat1, double lon1,
       return (distance);
  }
  
- void printDouble( double val, byte precision){
+ void printDouble(double val, byte precision){
   // prints val with number of decimal places determine by precision
   // precision is a number from 0 to 6 indicating the desired decimial places
 
@@ -167,6 +167,7 @@ double computeDistanceAndBearing(double lat1, double lon1,
  Serial.print("0");
     Serial.print(frac,DEC) ;
   }
+  Serial.write("\n");
 }
  
 
