@@ -39,7 +39,7 @@ void navigatePath(int state, double previousDistance){
   double destinationLat = LATITUDES[state];
   double destinationLong = LONGITUDES[state];
   
-  int flightStatus = fly_to(destinationLat,destinationLon); //Maybe return some kind of flight status here?
+  int flightStatus = fly_to(getCurrentLaittude(),getCurrentLongitude(),destinationLat,destinationLon); //Maybe return some kind of flight status here?
   
   double currentDistance = getCurrentDistance();
   
