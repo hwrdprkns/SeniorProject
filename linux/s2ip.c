@@ -71,10 +71,16 @@ void Readtty() {
 			buf[nchar] = '\0';
 			bcopy(buf,gld.atbuf,nchar+1);
 			gld.at_n += nchar;
+			return;
 		}
 		// exit command
         if ( buf[0]=='E' && buf[1] == 'X' && buf[2] == 'I'  && buf[3] == 'T' ) {
             running = 0;
+			return;
+        }
+		if ( buf[0]=='.' && buf[1] == '/' && buf[2] == 's'  && buf[3] == '2' ) {
+            write(gld.tty, "\002",1); /* send start signal */
+			return;
         }
 	}
 }
