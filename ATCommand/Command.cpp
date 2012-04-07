@@ -101,9 +101,7 @@ int Command::start_s2ip()
   char temp;
   delay(20000); //wait for drone to start
   
-  while (ARsrl.available()){
-    PCsrl.write(ARsrl.read());
-  }
+	readARsrl();
   
   if (debug) {
 	PCsrl <<"try start s2ip"<<endl;
@@ -114,9 +112,7 @@ int Command::start_s2ip()
   delay(500);
   ARsrl << "cd ~"<<endl;
   if (debug) {
-	while (ARsrl.available()){
-		PCsrl.write(ARsrl.read());
-	}
+	readARsrl();
   }
   delay(500);
   ARsrl << "cd data/video/apps/"<<endl;
@@ -199,4 +195,12 @@ int Command::fl2int(float value) {
 		resultint = *(int*)(&value);
 	}
 	return resultint;
+}
+
+void Command::readARsrl() {
+	while (ARsrl.available()){
+		if (debug) {
+			PCsrl.write(ARsrl.read());
+		}
+	}
 }

@@ -43,6 +43,8 @@ class Command {
 	int drone_hover();
 	int drone_landing();
 	
+	void readARsrl();
+	
 	int s2ip_running;
 	int drone_is_hover;
 	int drone_is_init;
