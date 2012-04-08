@@ -9,7 +9,7 @@
 
 #define BAUD 115200
 // adjust this base on how often you read your ring buffer
-#define SERIAL_BUFFER_SIZE 128
+#define SERIAL_BUFFER_SIZE 256
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 
@@ -32,20 +32,24 @@ class Command {
 	
     String makeAnim(int anim, int time);
     String LEDAnim(int duration);
+    
     //void flightMode();
     //void checkStatus();
     //void checkSequenceNumber();
+    
     int start_s2ip();
     void quit_s2ip();
-	
-	// return 1 if drone is initialized
-	int init_drone();
-	
-	int drone_takeoff();
-	
-	// return 1 if drone is hovering
-	int drone_hover();
-	int drone_landing();
+    
+    // return 1 if drone is initialized
+    int init_drone();
+    
+    int drone_takeoff();
+    
+    // return 1 if drone is hovering
+    int drone_hover();
+    
+    int drone_landing();
+    int drone_move();
 	
 	void readARsrl();
 	
@@ -57,7 +61,7 @@ class Command {
 	/** Moving functions **/
 	
 	/** When these functions are done (the drone has moved), they will return 1. **/
-	int moveStraightForward(int distanceInMeters);
+	int moveForward(int distanceInMeters);
 	int moveRotate(float yawInDegrees);
 
 	
