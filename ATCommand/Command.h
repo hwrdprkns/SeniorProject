@@ -7,6 +7,12 @@
 #define ARsrl Serial1
 #define PCsrl Serial
 
+#define BAUD 115200
+// adjust this base on how often you read your ring buffer
+#define SERIAL_BUFFER_SIZE 64
+// adjust this base on how often you receive message
+#define SERIAL_INTERVAL_USEC 30000
+
 typedef enum {
 	TAKEOFF,
 	LANDING
@@ -71,6 +77,16 @@ class Command {
 	
 };
 
+struct ring_buffer
+{
+  unsigned char buffer[SERIAL_BUFFER_SIZE];
+  volatile int head;
+  volatile int tail;
+};
+ring_buffer rx_buf= {{0}, 0, 0};
 
+inline void store_char(unsigned char c, ring_buffer *buffer);
+void SrlRead();
+void read_rx_buf();
 
 #endif
