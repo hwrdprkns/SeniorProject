@@ -223,3 +223,47 @@ void Command::readARsrl() {
 		}
 	}
 }
+
+// Volatile, since it is modified in an ISR.
+volatile boolean inService = false;
+
+void SrlRead() {
+  if (inService) {
+    PCsrl.println("timer kicked too fast");
+    return;
+  }
+  interrupts();
+  inService = true;
+  while(ARsrl.available()) {
+    unsigned char k = ARsrl.read();
+    store_char( k, &rx_buf);
+  } 
+  inService = false;
+}
+
+void read_rx_buf() {
+	while ( rx_buf.tail != rx_buf.head) {
+		if (debug) {
+			PCsrl.write(rx_buf.buffer[rx_buf.tail]);
+		}
+		rx_buf.tail = (unsigned int) (rx_buf.tail+ 1) % SERIAL_BUFFER_SIZE;
+	}
+}
+
+inline void store_char(unsigned char c, ring_buffer *buffer)
+{
+  int i = (unsigned int)(buffer->head + 1) % SERIAL_BUFFER_SIZE;
+
+  // if we should be storing the received character into the location
+  // just before the tail (meaning that the head would advance to the
+  // current location of the tail), we're about to overflow the buffer
+  // and so we don't write the character or advance the head.
+  if (i != buffer->tail) {
+    buffer->buffer[buffer->head] = c;
+    buffer->head = i;
+  }
+  else {
+    Serial.println("ring buffer is too small");
+  }
+}
+
