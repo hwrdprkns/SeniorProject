@@ -20,14 +20,14 @@ class Command {
     String sendFtrim();
     String sendConfig(String option, String value);
     String sendRef(flying_status fs);
-	
-	// clear emergency flag && fs set to LANDING if emergency == 1, 
-	String sendRef(flying_status fs, int emergency);
+	  
+    // clear emergency flag && fs set to LANDING if emergency == 1, 
+    String sendRef(flying_status fs, int emergency);
 	
    
-	String sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
-    String sendAnim(int anim, int time);
-	String LEDAnim(int duration);
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+    String makeAnim(int anim, int time);
+    String LEDAnim(int duration);
     //void flightMode();
     //void checkStatus();
     //void checkSequenceNumber();
@@ -49,14 +49,28 @@ class Command {
 	int drone_is_hover;
 	int drone_is_init;
 	int emergency;
+	
+	/** Moving functions **/
+	
+	/** When these functions are done (the drone has moved), they will return true. **/
+	bool moveStraightForward(int distanceInMeters);
+	bool moveRotate(double yawInDegrees);
 
 	
   private:
     String at;
     String command;
+
+	String previousCommand;
+	float lastRoll; 
+	float lastPitch; 
+	float lastGaz; 
+	float lastYaw;
 	
 	int fl2int(float value);
-	String sendPcmd(int enable, int roll, int pitch, int gaz, int yaw);
+	String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+	void sendPcmd(String pcmd);
+	
 };
 
 

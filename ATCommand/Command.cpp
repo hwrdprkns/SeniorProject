@@ -8,7 +8,7 @@ Command::Command()
 {
   at = "";
   command = "";
-  	s2ip_running = 0;
+     s2ip_running = 0;
     drone_is_init = 0;
     drone_is_hover = 0;
 	emergency = 0;
@@ -61,25 +61,45 @@ String Command::sendRef(flying_status fs, int emergency) {
 	}
 }
 
-// private
-String Command::sendPcmd(int enable, int roll, int pitch, int gaz, int yaw)
-{
-  at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + roll + "," + pitch + "," + gaz + "," + yaw + "\r\n";
-  sequenceNumber++;
-  return command;
-}
-
 // public with float version
-String Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw) {
-	/*at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r\n";
-  sequenceNumber++;*/
-  return sendPcmd(enable, fl2int(roll), fl2int(pitch), fl2int(gaz), fl2int(yaw));
+String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw) {
+	at = "AT*PCMD=";
+  	command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r\n";
+  	sequenceNumber++;
+	return command;
+}
+
+/** Movement functions **/
+
+bool Command::moveStraightForward(int distanceInMeters){
+	int pitchCalibrationFactor = -1;
+	int delayFactor = 3;
+	String moveForward = makePcmd(1,lastRoll,(lastPitch - pitchCalibrationFactor),lastGaz,lastYaw);
+	sendPcmd(command);
+	delay(delayFactor*distanceInMeters*50); //This is in millis, right?
+	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
+	sendPcmd(hover);
+	return true;
+}
+
+bool Command::moveRotate(float yawInDegrees){
+	int rotateCalibrationFactor = 5;
+	int delayFactor = 3;
+	String moveRotate = makePcmd(1,lastRoll,lastPitch,lastGaz,(lastYaw + yawInDegrees*rotateCalibrationFactor));
+	sendPcmd(moveRotate);
+	delay(delayFactor*rotateCalibrationFactor*50);//Again... in millis?
+	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
+	sendPcmd(hover);
+	return true;
+}
+
+void Command::sendPcmd(String command){
+	lastCommand = command;
+	ARsrl << command;
 }
 
 
-String Command::sendAnim(int anim, int time)
+String Command::makeAnim(int anim, int time)
 {
   at = "AT*ANIM=";
   command = at + sequenceNumber + "," + anim + "," + time + "\r\n";
