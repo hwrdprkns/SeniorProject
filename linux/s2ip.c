@@ -171,7 +171,6 @@ void init_nav() {
 	sendto(gld.sd_sock, (char*)&navsignal, sizeof(int), 0, (struct sockaddr *)&gld.navp, sizeof(gld.navp));
 }
 
-// not a priority. leave for later implementation
 void ReadNav() {
 	int nchar;
 	char buf[NAV_BUF_SIZE];
@@ -193,7 +192,7 @@ void ReadNav() {
 	else {
 		sp = htons(recv_addr.sin_port);
 		if (verbose) {
-			fprintf(stderr,"ReadNAV():got packet from %d\n", sp);
+			fprintf(stderr,"ReadNAV():got packet of character %d from %d\n", nchar, sp);
 		}
 		switch (sp) {
 			case 5554:
