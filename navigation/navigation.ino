@@ -4,17 +4,14 @@
 #include <SoftwareSerial.h>
 
 /**
- * 
  * This is the sketch for the following functions:
  * 
  * SantiyCheck
  * calculateWaypoints
  **/
 
-double LATITUDES[] = {
-  42.408083,42.40798,42.407934};
-double LONGITUDES[] = {
-  -71.116326,-71.116253, -71.115977};
+float LATITUDES[] = {42.408083,42.40798,42.407934};
+float LONGITUDES[] = {-71.116326,-71.116253, -71.115977};
 int NUMBER_OF_WAYPOINTS = 3;
 
 TinyGPS gps;
@@ -24,7 +21,7 @@ void setup()
   Serial1.begin(57600); // Baud rate of our GPS
   Serial.begin(57600);
 }
-
+ 
 
 
 void loop()
@@ -34,29 +31,57 @@ void loop()
   return;
 } 
 
-
-
-
-/**
-
 void navigatePath(int state, double previousDistance){
   
   double destinationLat = LATITUDES[state];
   double destinationLong = LONGITUDES[state];
   
-  int flightStatus = fly_to(getCurrentLaittude(),getCurrentLongitude(),destinationLat,destinationLon); //Maybe return some kind of flight status here?
+  int flightStatus = fly_to(getCurrent(1),getCurrent(0),destinationLat,destinationLon); //Maybe return some kind of flight status here?
   
   double currentDistance = getCurrentDistance();
   
-  if(!(currentDistance < previousDistance)) emergencySituation();//Need to handle if we get no closer.
+  if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
   
   if(currentDistance < 10){doShutdown(); return;}
     
-  navigatePath(state +1, currentDistance);
+  navigatePath(state + 1, currentDistance);
  
 }
 
-*/
+int fly_to(float startLat,float startLong,float endLat,float endLon){
+	
+	double bearing = Waypoint::computeInitialBearing(startLat,startLong,endLat,endLon);
+	
+	//Send bearing command to Drone
+	
+	double distance == Waypoint::calculateDistance(startLat,startLong,endLat,endLon);
+	
+	//Send distance command to drone. 
+}
+
+float getCurrent(int param){
+	
+	float latitude,longitude;
+	unsigned long age;
+	
+	gps.f_get_position(&latitude,&longitude,&age);
+	
+	if(param == 1) return latitude;
+	
+	return longitude;
+}
+
+void emergencySituation(int emergency){
+	
+	if(emergency == -1){
+		doShutdown();
+	}
+	
+}
+
+void doShutdown(){
+	
+}
   
   
 boolean checkSanity(){
@@ -82,10 +107,6 @@ boolean checkSanity(){
 
   return isSaneDistance;
 }
-
-
-
-
 
 
 void printDouble(double val, byte precision){
