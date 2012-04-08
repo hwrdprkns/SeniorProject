@@ -174,6 +174,8 @@ int Command::init_drone() {
 	emergency = 0;
 	
 		//do some checking??
+		
+	return 1;
 }
 
 int Command::drone_takeoff() {
@@ -186,6 +188,8 @@ int Command::drone_takeoff() {
 		i++;
 		if (i == 5) drone_is_hover=1;
 	}
+	
+	return 1;
 }
 
 int Command::drone_hover() {
@@ -194,6 +198,8 @@ int Command::drone_hover() {
 		delay(30);
 			// do some checking
 	}
+	
+	return 1;
 }
 
 int Command::drone_landing() {
@@ -206,6 +212,8 @@ int Command::drone_landing() {
 		i++;
 		if (i == 5) drone_is_hover=0;
 	}
+	
+	return 1;
 }
 
 int Command::fl2int(float value) {
