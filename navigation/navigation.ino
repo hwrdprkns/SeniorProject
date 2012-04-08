@@ -2,6 +2,8 @@
 #include "TinyGps.h"
 #include <math.h>
 #include <SoftwareSerial.h>
+#include "Command.h"
+#include "Streaming.h"
 
 /**
  * This is the sketch for the following functions:
@@ -18,10 +20,25 @@ TinyGPS gps;
 
 float currentDistance;
 
+
+
+/** Command definitions **/
+
+int debug = 1;
+extern ring_buffer rx_buf;
+Command com;
+int sequenceNumber = 1;
+int i = 1;
+String atcmd = "";
+#include "TimerThree.h"
+#define LEDpin 13
+
+
+
 void setup()
 {
-  Serial1.begin(57600); // Baud rate of our GPS
-  Serial.begin(57600);
+  Serial2.begin(57600); // Baud rate of our GPS
+  commandSetup();
 }
  
 
@@ -29,9 +46,60 @@ void setup()
 void loop()
 {
   checkSanity();
-  //navigatePath(0,WayPoint::calculateDistance(getLatitudeFromGPS(),getLongitudeFromGPS(),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
+  commandLoop();
+  navigatePath(0,WayPoint::calculateDistance(getLatitudeFromGPS(),getLongitudeFromGPS(),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
   return;
 } 
+
+
+/*** Setting up command library here **/
+
+void commandSetup(){
+  ARsrl.begin(115200);
+  PCsrl.begin(115200);
+  if (debug) {
+	//never use three ! together in arduino code
+	PCsrl << "yeahhh!!fuckya!\r\n";
+  }
+  Timer3.initialize(SERIAL_INTERVAL_USEC);
+  Timer3.attachInterrupt(SrlRead);
+}
+
+
+void commandLoop(){
+    if ( com.s2ip_running == 0 ) {
+   com.s2ip_running = com.start_s2ip();
+   //upon exit s2ip_running == 1
+  }
+  
+  if ( com.s2ip_running == 1) {
+    delay(200);
+    ARsrl<< com.LEDAnim(5);
+	delay(3000); 
+	
+	/* code that run for take off ?*/
+	if (com.drone_is_init == 0) {
+		com.drone_is_init = com.init_drone();
+	}
+	// drone take off
+	if (com.drone_is_init == 1) {
+		com.drone_takeoff();
+	}
+	delay(500);
+	com.drone_landing();
+
+	com.quit_s2ip();
+    com.s2ip_running == 0;
+    delay(100000);
+  }
+}
+
+
+
+
+// ** End command setup **//
+
+
 
 void navigatePath(int state, double previousDistance){
   
@@ -82,8 +150,7 @@ void emergencySituation(int emergency){
 
 void doShutdown(){
 	
-}
-  
+} 
   
 boolean checkSanity(){
 
@@ -95,16 +162,9 @@ boolean checkSanity(){
   printDouble(bearingSanity,5);
   printDouble(finalSanity,5);
 
-  Serial.write("\n");
-
   //boolean droneSanity = checkDroneSanity();
 
   boolean isSaneDistance = distanceSanity < 1000;
-
-  if(isSaneDistance)
-    Serial.write("This is a sane distance \n");
-  else
-    Serial.write("The distance is too long \n");
 
   return isSaneDistance;
 }
