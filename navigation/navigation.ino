@@ -16,6 +16,8 @@ int NUMBER_OF_WAYPOINTS = 3;
 
 TinyGPS gps;
 
+float currentDistance;
+
 void setup()
 {
   Serial1.begin(57600); // Baud rate of our GPS
@@ -36,9 +38,7 @@ void navigatePath(int state, double previousDistance){
   double destinationLat = LATITUDES[state];
   double destinationLong = LONGITUDES[state];
   
-  int flightStatus = fly_to(getCurrent(1),getCurrent(0),destinationLat,destinationLon); //Maybe return some kind of flight status here?
-  
-  double currentDistance = getCurrentDistance();
+  int flightStatus = fly_to(getCurrent(1),getCurrent(0),destinationLat,destinationLong); //Maybe return some kind of flight status here?
   
   if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
   
@@ -50,13 +50,14 @@ void navigatePath(int state, double previousDistance){
 
 int fly_to(float startLat,float startLong,float endLat,float endLon){
 	
-	double bearing = Waypoint::computeInitialBearing(startLat,startLong,endLat,endLon);
+	float bearing = (float) WayPoint::computeInitialBearing(startLat,startLong,endLat,endLon);
 	
 	//Send bearing command to Drone
 	
-	double distance == Waypoint::calculateDistance(startLat,startLong,endLat,endLon);
+	float distance = (float) WayPoint::computeDistance(startLat,startLong,endLat,endLon);
+	currentDistance = distance;
 	
-	//Send distance command to drone. 
+	//Send distance command to Drone. 
 }
 
 float getCurrent(int param){
