@@ -111,7 +111,6 @@ String Command::makeAnim(int anim, int time)
 
 String Command::LEDAnim(int duration)
 {
-	PCsrl << "calling LEDAnime" <<endl;
   at = "AT*LED=";
   command = at + sequenceNumber + ",2,1073741824," + duration + "\r\n";
   sequenceNumber++;
@@ -227,11 +226,7 @@ int Command::fl2int(float value) {
 }
 
 void Command::readARsrl() {
-	while (ARsrl.available()){
-		if (debug) {
-			PCsrl.write(ARsrl.read());
-		}
-	}
+	read_rx_buf();
 }
 
 // Volatile, since it is modified in an ISR.

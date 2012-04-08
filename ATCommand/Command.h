@@ -9,7 +9,7 @@
 
 #define BAUD 115200
 // adjust this base on how often you read your ring buffer
-#define SERIAL_BUFFER_SIZE 64
+#define SERIAL_BUFFER_SIZE 128
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 
