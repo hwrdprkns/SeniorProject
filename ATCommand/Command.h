@@ -83,7 +83,7 @@ struct ring_buffer
   volatile int head;
   volatile int tail;
 };
-ring_buffer rx_buf= {{0}, 0, 0};
+
 
 inline void store_char(unsigned char c, ring_buffer *buffer);
 void SrlRead();

@@ -2,6 +2,7 @@
 #include "Streaming.h"
 
 int debug = 1;
+extern ring_buffer rx_buf;
 
 Command com;
 int sequenceNumber = 1;

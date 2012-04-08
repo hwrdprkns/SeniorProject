@@ -4,6 +4,8 @@
 extern int sequenceNumber;
 extern int debug;
 
+ring_buffer rx_buf= {{0}, 0, 0};
+
 Command::Command()
 {
   at = "";
