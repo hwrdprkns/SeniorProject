@@ -24,8 +24,6 @@ class Command {
     // clear emergency flag && fs set to LANDING if emergency == 1, 
     String sendRef(flying_status fs, int emergency);
 	
-   
-    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     String makeAnim(int anim, int time);
     String LEDAnim(int duration);
     //void flightMode();
@@ -52,9 +50,9 @@ class Command {
 	
 	/** Moving functions **/
 	
-	/** When these functions are done (the drone has moved), they will return true. **/
-	bool moveStraightForward(int distanceInMeters);
-	bool moveRotate(double yawInDegrees);
+	/** When these functions are done (the drone has moved), they will return 1. **/
+	int moveStraightForward(int distanceInMeters);
+	int moveRotate(float yawInDegrees);
 
 	
   private:

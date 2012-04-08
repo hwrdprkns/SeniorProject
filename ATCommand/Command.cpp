@@ -71,7 +71,7 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
 
 /** Movement functions **/
 
-bool Command::moveStraightForward(int distanceInMeters){
+int Command::moveStraightForward(int distanceInMeters){
 	int pitchCalibrationFactor = -1;
 	int delayFactor = 3;
 	String moveForward = makePcmd(1,lastRoll,(lastPitch - pitchCalibrationFactor),lastGaz,lastYaw);
@@ -79,10 +79,10 @@ bool Command::moveStraightForward(int distanceInMeters){
 	delay(delayFactor*distanceInMeters*50); //This is in millis, right?
 	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
 	sendPcmd(hover);
-	return true;
+	return 1;
 }
 
-bool Command::moveRotate(float yawInDegrees){
+int Command::moveRotate(float yawInDegrees){
 	int rotateCalibrationFactor = 5;
 	int delayFactor = 3;
 	String moveRotate = makePcmd(1,lastRoll,lastPitch,lastGaz,(lastYaw + yawInDegrees*rotateCalibrationFactor));
@@ -90,11 +90,11 @@ bool Command::moveRotate(float yawInDegrees){
 	delay(delayFactor*rotateCalibrationFactor*50);//Again... in millis?
 	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
 	sendPcmd(hover);
-	return true;
+	return 1;
 }
 
 void Command::sendPcmd(String command){
-	lastCommand = command;
+	previousCommand = command;
 	ARsrl << command;
 }
 
@@ -178,7 +178,7 @@ int Command::drone_takeoff() {
 	ARsrl << sendRef(TAKEOFF);
 	int i = 0;
 	while (!drone_is_hover && !emergency) {
-		ARsrl<< sendPcmd(1,(float) 0, (float) 0, (float) 1, (float) 0);
+		ARsrl<< makePcmd(1,(float) 0, (float) 0, (float) 1, (float) 0);
 		delay(30);
 			// do some checking
 		i++;
@@ -188,7 +188,7 @@ int Command::drone_takeoff() {
 
 int Command::drone_hover() {
 	while (!emergency) {
-		ARsrl<< sendPcmd(1,(float) 0, (float) 0, (float) 0, (float) 0);
+		ARsrl<< makePcmd(1,(float) 0, (float) 0, (float) 0, (float) 0);
 		delay(30);
 			// do some checking
 	}
@@ -198,7 +198,7 @@ int Command::drone_landing() {
 	float neg_one = -1.0;
 	int i= 0;
 	while (drone_is_hover && !emergency) {
-		ARsrl<< sendPcmd(1,(float)0,(float)0,neg_one,(float)0);
+		ARsrl<< makePcmd(1,(float)0,(float)0,neg_one,(float)0);
 		delay(30);
 			// do some checking
 		i++;
