@@ -1,5 +1,7 @@
 #include "WayPoint.h"
+#include "TinyGps.h"
 #include <math.h>
+#include <SoftwareSerial.h>
 
 /**
  * 
@@ -15,9 +17,12 @@ double LONGITUDES[] = {
   -71.116326,-71.116253, -71.115977};
 int NUMBER_OF_WAYPOINTS = 3;
 
+TinyGPS gps;
+
 void setup()
 {
-  Serial.begin(9600);
+  Serial1.begin(57600); // Baud rate of our GPS
+  Serial.begin(57600);
 }
 
 

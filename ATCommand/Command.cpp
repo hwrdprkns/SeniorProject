@@ -210,8 +210,7 @@ int Command::fl2int(float value) {
 	int resultint = 0;
 	if ( value < -1 || value > 1 ) {
 		resultint = 1;
-	}
-	else {
+	} else {
 		resultint = *(int*)(&value);
 	}
 	return resultint;
