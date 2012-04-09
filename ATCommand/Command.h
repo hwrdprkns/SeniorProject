@@ -19,6 +19,28 @@ typedef enum {
 } flying_status;
 	
 	
+// Mayday scenarii
+typedef enum {
+	ARDRONE_ANIM_PHI_M30_DEG= 0,
+	ARDRONE_ANIM_PHI_30_DEG,
+	ARDRONE_ANIM_THETA_M30_DEG,
+	ARDRONE_ANIM_THETA_30_DEG,
+	ARDRONE_ANIM_THETA_20DEG_YAW_200DEG,
+	ARDRONE_ANIM_THETA_20DEG_YAW_M200DEG,
+	ARDRONE_ANIM_TURNAROUND,
+	ARDRONE_ANIM_TURNAROUND_GODOWN,
+	ARDRONE_ANIM_YAW_SHAKE,
+	ARDRONE_ANIM_YAW_DANCE,
+	ARDRONE_ANIM_PHI_DANCE,
+	ARDRONE_ANIM_THETA_DANCE,
+    ARDRONE_ANIM_VZ_DANCE,
+	ARDRONE_ANIM_WAVE,
+	ARDRONE_ANIM_PHI_THETA_MIXED,
+	ARDRONE_ANIM_DOUBLE_PHI_THETA_MIXED,
+	ARDRONE_NB_ANIM_MAYDAY
+} anim_mayday_t;
+
+
 class Command {
   public:
     Command();
@@ -30,7 +52,7 @@ class Command {
     // clear emergency flag && fs set to LANDING if emergency == 1, 
     String sendRef(flying_status fs, int emergency);
 	
-    String makeAnim(int anim, int time);
+    String makeAnim(anim_mayday_t anim, int time);
     String LEDAnim(int duration);
     
     //void flightMode();

@@ -103,7 +103,7 @@ void Command::sendPcmd(String command)
 }
 
 
-String Command::makeAnim(int anim, int time)
+String Command::makeAnim(anim_mayday_t anim, int time)
 {
   at = "AT*ANIM=";
   command = at + sequenceNumber + "," + anim + "," + time + "\r\n";
@@ -173,7 +173,7 @@ void Command::quit_s2ip()
 int Command::init_drone()
 {
   ARsrl << sendComwdg();
-      ARsrl << LEDAnim(5);
+      ARsrl << LEDAnim(2);
   ARsrl << sendConfig("general:navdata_demo","TRUE");
   ARsrl << sendConfig("control:altitude_max","2000");
   ARsrl << sendConfig("control:outdoor","TRUE");
@@ -189,6 +189,13 @@ int Command::init_drone()
 int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
+  
+  int i=0;
+  while (i < 30) {
+    ARsrl << makePcmd(1, (float) 0, (float) 0, (float) 1, (float) 0);
+    delay(100);
+    i++;
+  }
   return 1;
 }
 
@@ -201,12 +208,18 @@ int Command::drone_hover()
 int Command::drone_landing()
 {
   ARsrl << sendRef(LANDING);
+  int i=0;
+  while (i <10) {
+    ARsrl << makePcmd(1, (float) 0, (float) 0, (float) -1, (float) 0);
+    delay(100);
+    i++;
+  }
   return 1;
 }
 
 int Command::drone_move()
 {  int i = 0;
-  while ( i < 5) {
+  while ( i < 4) {
   ARsrl << makePcmd(1, (float) 1, (float) 0, (float) 0, (float) 0);
   i++;
   delay(100);

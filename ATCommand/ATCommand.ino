@@ -49,15 +49,17 @@ void loop()
       read_rx_buf();
      //com.drone_hover();
     delay(1000);
-    
+    ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND,1);
+    ARsrl << com.LEDAnim(2);
+    delay(1000);
     int i = 0;
-    for ( i = 0; i<10; i++ ) {
+    /*for ( i = 0; i<10; i++ ) {
       com.drone_hover();
       delay(100);
-    }
+    }*/
     //com.drone_move();
-    delay(1000);
- com.drone_landing();
+    //delay(1000);
+     com.drone_landing();
     delay(500);  
   }
     delay(500);
