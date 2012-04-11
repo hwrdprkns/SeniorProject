@@ -3,6 +3,7 @@
 
 int debug = 1;
 extern ring_buffer rx_buf;
+extern resultint_ resultint;
 
 Command com;
 int sequenceNumber = 1;
@@ -47,14 +48,14 @@ void loop()
       }
       com.drone_takeoff();
       read_rx_buf();
-      com.drone_hover(1200);
+     //com.drone_hover(1200);
       delay(1000);
       //ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND, 1);
       ARsrl << com.LEDAnim(2);
       delay(1000);
-      com.moveForward(4);
-      com.moveRotate(50);
-      com.moveForward(4);
+      //com.moveForward(4);
+      //com.moveRotate(50);
+      //com.moveForward(4);
       /*int i = 0;
       for (i=0; i<10; i++) {
         com.drone_hover();

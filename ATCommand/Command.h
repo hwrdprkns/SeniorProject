@@ -103,10 +103,10 @@ struct ring_buffer
   volatile int tail;
 };
 
-union {
-	long i;
-	float f;
-	} resultint;
+union resultint_{
+  long i;
+  float f;
+};
 
 inline void store_char(unsigned char c, ring_buffer *buffer);
 void SrlRead();

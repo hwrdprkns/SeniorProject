@@ -5,6 +5,7 @@ extern int sequenceNumber;
 extern int debug;
 
 ring_buffer rx_buf= {{0}, 0, 0};
+resultint_ resultint;
 
 Command::Command()
 {
@@ -111,10 +112,10 @@ int Command::moveRotate(float yawInDegrees)
   sendPcmd(hover);*/
 }
 
-String Command::makePcmd(int enable, int roll, int pitch, int gaz, int yaw)
+String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
   at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + roll + "," + pitch + "," + gaz + "," + yaw + "\r\n";
+  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r\n";
   sequenceNumber++;
   return command;
 }
@@ -236,7 +237,7 @@ int Command::drone_landing()
 int Command::drone_move_up()
 {
   int i = 0;
-  while (i < 30) {
+  while (i < 1) {
     ARsrl << makePcmd(1, 0, 0, 1, 0);
     delay(100);
     i++;
@@ -247,7 +248,7 @@ int Command::drone_move_up()
 int Command::drone_move_down()
 {
   int i = 0;
-  while (i < 30) {
+  while (i < 1) {
     ARsrl << makePcmd(1, 0, 0, -1, 0);
     delay(100);
     i++;
