@@ -88,7 +88,7 @@ class Command {
     String at;
     String command;
     
-    int fl2int(float value);
+    long fl2int(float value);
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     void sendPcmd(String pcmd);
     
@@ -105,6 +105,11 @@ struct ring_buffer
   volatile int head;
   volatile int tail;
 };
+
+union {
+	long i;
+	float f;
+	} resultint;
 
 inline void store_char(unsigned char c, ring_buffer *buffer);
 void SrlRead();

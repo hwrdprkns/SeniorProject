@@ -250,15 +250,16 @@ int Command::drone_move()
   return 1;
 }
 
-int Command::fl2int(float value)
+long Command::fl2int(float value)
 {
-  int resultint = 0;
+  resultint.i = 0;
   if (value < -1 || value > 1) {
-    resultint = 1;
+    resultint.f = 1;
   } else {
-    resultint = *(int*)(&value);
+    resultint.f=value;
   }
-  return resultint;
+
+  return resultint.i;
 }
 
 void Command::readARsrl()
