@@ -51,7 +51,7 @@ class Command {
     String sendRef(flying_status fs, int emergency);
 	
     String makeAnim(anim_mayday_t anim, int time);
-    String LEDAnim(int duration);
+    String LEDAnim(int animseq, int duration);
     
     //void flightMode();
     //void checkStatus();
@@ -63,7 +63,7 @@ class Command {
     int init_drone();
     
     int drone_takeoff();
-    int drone_hover(int time);
+    int drone_hover(int msec);
     int drone_landing();
     int drone_move_up();
     int drone_move_down();
