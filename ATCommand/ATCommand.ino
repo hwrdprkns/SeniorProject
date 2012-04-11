@@ -17,7 +17,7 @@ void setup()
   ARsrl.begin(115200);
   PCsrl.begin(115200);
   if (debug) {
-    //never use three ! together in arduino code
+    // never use three ! together in arduino code
     PCsrl << "Whatever!\r\n";
   }
   Timer3.initialize(SERIAL_INTERVAL_USEC);
@@ -28,8 +28,8 @@ void loop()
 {
   if (com.s2ip_running == 0) {
     read_rx_buf();
-   com.s2ip_running = com.start_s2ip();
-   //upon exit s2ip_running == 1
+    com.s2ip_running = com.start_s2ip();
+    //upon exit s2ip_running == 1
   }
   
   if (com.s2ip_running == 1) {
@@ -43,25 +43,28 @@ void loop()
     // drone take off
     if (com.drone_is_init == 1) {
       if (debug) {
-        PCsrl << "drone is init" <<endl;
+        PCsrl << "drone is init" << endl;
       }
       com.drone_takeoff();
       read_rx_buf();
-     //com.drone_hover();
-    delay(1000);
-    ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND,1);
-    ARsrl << com.LEDAnim(2);
-    delay(1000);
-    int i = 0;
-    /*for ( i = 0; i<10; i++ ) {
-      com.drone_hover();
-      delay(100);
-    }*/
-    //com.drone_move();
-    //delay(1000);
-     com.drone_landing();
-    delay(500);  
-  }
+      //com.drone_hover();
+      delay(1000);
+      //ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND, 1);
+      ARsrl << com.LEDAnim(2);
+      delay(1000);
+      com.moveForward(4);
+      com.moveRotate(50);
+      com.moveForward(4);
+      /*int i = 0;
+      for (i=0; i<10; i++) {
+        com.drone_hover();
+        delay(100);
+      }*/
+      //com.drone_move();
+      //delay(1000);
+      com.drone_landing();
+      delay(500);
+    }
     delay(500);
     
     com.quit_s2ip();

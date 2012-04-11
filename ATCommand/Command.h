@@ -17,9 +17,8 @@ typedef enum {
 	TAKEOFF,
 	LANDING
 } flying_status;
-	
-	
-// Mayday scenarii
+
+// Mayday scenario
 typedef enum {
 	ARDRONE_ANIM_PHI_M30_DEG= 0,
 	ARDRONE_ANIM_PHI_30_DEG,
@@ -33,13 +32,12 @@ typedef enum {
 	ARDRONE_ANIM_YAW_DANCE,
 	ARDRONE_ANIM_PHI_DANCE,
 	ARDRONE_ANIM_THETA_DANCE,
-    ARDRONE_ANIM_VZ_DANCE,
+	ARDRONE_ANIM_VZ_DANCE,
 	ARDRONE_ANIM_WAVE,
 	ARDRONE_ANIM_PHI_THETA_MIXED,
 	ARDRONE_ANIM_DOUBLE_PHI_THETA_MIXED,
 	ARDRONE_NB_ANIM_MAYDAY
 } anim_mayday_t;
-
 
 class Command {
   public:
@@ -72,35 +70,33 @@ class Command {
     
     int drone_landing();
     int drone_move();
-	
-	void readARsrl();
-	
-	int s2ip_running;
-	int drone_is_hover;
-	int drone_is_init;
-	int emergency;
-	
-	/** Moving functions **/
-	
-	/** When these functions are done (the drone has moved), they will return 1. **/
-	int moveForward(int distanceInMeters);
-	int moveRotate(float yawInDegrees);
-
-	
+    
+    void readARsrl();
+    
+    int s2ip_running;
+    int drone_is_hover;
+    int drone_is_init;
+    int emergency;
+    
+    /** Moving functions **/
+    
+    /** When these functions are done (the drone has moved), they will return 1. **/
+    int moveForward(float distanceInMeters);
+    int moveRotate(float yawInDegrees);
+    	
   private:
     String at;
     String command;
-
-	String previousCommand;
-	float lastRoll; 
-	float lastPitch; 
-	float lastGaz; 
-	float lastYaw;
-	
-	int fl2int(float value);
-	String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
-	void sendPcmd(String pcmd);
-	
+    
+    int fl2int(float value);
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+    void sendPcmd(String pcmd);
+    
+    String previousCommand;
+    /*float lastRoll; 
+    float lastPitch; 
+    float lastGaz;
+    float lastYaw;*/
 };
 
 struct ring_buffer
@@ -109,7 +105,6 @@ struct ring_buffer
   volatile int head;
   volatile int tail;
 };
-
 
 inline void store_char(unsigned char c, ring_buffer *buffer);
 void SrlRead();

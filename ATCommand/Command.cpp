@@ -65,27 +65,50 @@ String Command::sendRef(flying_status fs, int emergency)
 }
 
 /** Movement functions **/
-int Command::moveForward(int distanceInMeters)
+int Command::moveForward(float distanceInMeters)
 {
-	int pitchCalibrationFactor = -1;
-	int delayFactor = 3;
-	String moveForward = makePcmd(1,lastRoll,(lastPitch - pitchCalibrationFactor),lastGaz,lastYaw);
-	sendPcmd(command);
-	delay(delayFactor*distanceInMeters*50); //This is in millis, right?
-	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
-	sendPcmd(hover);
-	return 1;
+  float i = 0;
+  String moveForward = makePcmd(1, 0, (float) 1, 0, 0);
+  sendPcmd(moveForward);
+  delay(200);
+  while (i < distanceInMeters) {
+    String stayForward = makePcmd(1, 0, 0, 0, 0);
+    sendPcmd(stayForward);
+    delay(200);
+    i += 0.2;
+  }
+  return 1;
+  
+  /*int pitchCalibrationFactor = -1;
+  int delayFactor = 3;
+  String moveForward = makePcmd(1,lastRoll,(lastPitch - pitchCalibrationFactor),lastGaz,lastYaw);
+  sendPcmd(command);
+  delay(delayFactor*distanceInMeters*50); //This is in millis, right?
+  String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
+  sendPcmd(hover);*/
 }
+
 int Command::moveRotate(float yawInDegrees)
 {
-	int rotateCalibrationFactor = 5;
-	int delayFactor = 3;
-	String moveRotate = makePcmd(1,lastRoll,lastPitch,lastGaz,(lastYaw + yawInDegrees*rotateCalibrationFactor));
-	sendPcmd(moveRotate);
-	delay(delayFactor*rotateCalibrationFactor*50);//Again... in millis?
-	String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
-	sendPcmd(hover);
-	return 1;
+  float i = 0;
+  String moveRotate = makePcmd(1, 0, 0, (float) 1, 0);
+  sendPcmd(moveRotate);
+  delay(200);
+  while (i < yawInDegrees/10) {
+    String stayRotate = makePcmd(1, 0, 0, 0, 0);
+    sendPcmd(stayRotate);
+    delay(200);
+    i += 0.2;
+  }
+  return 1;
+  
+  /*int rotateCalibrationFactor = 5;
+  int delayFactor = 3;
+  String moveRotate = makePcmd(1,lastRoll,lastPitch,lastGaz,(lastYaw + yawInDegrees*rotateCalibrationFactor));
+  sendPcmd(moveRotate);
+  delay(delayFactor*rotateCalibrationFactor*50);//Again... in millis?
+  String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
+  sendPcmd(hover);*/
 }
 
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
@@ -101,7 +124,6 @@ void Command::sendPcmd(String command)
   previousCommand = command;
   ARsrl << command;
 }
-
 
 String Command::makeAnim(anim_mayday_t anim, int time)
 {
@@ -135,7 +157,7 @@ int Command::start_s2ip()
   delay(500);
   ARsrl.print("\r\n");
   delay(500);
-  ARsrl << "cd ~"<<endl;
+  ARsrl << "cd ~" << endl;
   
   if (debug) {
     readARsrl();
@@ -165,7 +187,7 @@ int Command::start_s2ip()
 void Command::quit_s2ip()
 {
   ARsrl.println("EXIT");
-  while (ARsrl.available ()) {
+  while (ARsrl.available()) {
     PCsrl.write(ARsrl.read()); 
   }
 }
@@ -173,7 +195,7 @@ void Command::quit_s2ip()
 int Command::init_drone()
 {
   ARsrl << sendComwdg();
-      ARsrl << LEDAnim(2);
+  //ARsrl << LEDAnim(2);
   ARsrl << sendConfig("general:navdata_demo","TRUE");
   ARsrl << sendConfig("control:altitude_max","2000");
   ARsrl << sendConfig("control:outdoor","TRUE");
@@ -190,7 +212,7 @@ int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
   
-  int i=0;
+  int i = 0;
   while (i < 30) {
     ARsrl << makePcmd(1, (float) 0, (float) 0, (float) 1, (float) 0);
     delay(100);
@@ -208,8 +230,8 @@ int Command::drone_hover()
 int Command::drone_landing()
 {
   ARsrl << sendRef(LANDING);
-  int i=0;
-  while (i <10) {
+  int i = 0;
+  while (i < 10) {
     ARsrl << makePcmd(1, (float) 0, (float) 0, (float) -1, (float) 0);
     delay(100);
     i++;
@@ -218,11 +240,12 @@ int Command::drone_landing()
 }
 
 int Command::drone_move()
-{  int i = 0;
-  while ( i < 4) {
-  ARsrl << makePcmd(1, (float) 1, (float) 0, (float) 0, (float) 0);
-  i++;
-  delay(100);
+{
+  int i = 0;
+  while (i < 4) {
+    ARsrl << makePcmd(1, (float) 1, (float) 0, (float) 0, (float) 0);
+    i++;
+    delay(100);
   }
   return 1;
 }
@@ -250,7 +273,8 @@ void Command::readARsrl()
 // Volatile, since it is modified in an ISR.
 volatile boolean inService = false;
 
-void SrlRead() {
+void SrlRead()
+{
   if (inService) {
     PCsrl.println("timer kicked too fast");
     return;
@@ -259,18 +283,19 @@ void SrlRead() {
   inService = true;
   while(ARsrl.available()) {
     unsigned char k = ARsrl.read();
-    store_char( k, &rx_buf);
-  } 
+    store_char(k, &rx_buf);
+  }
   inService = false;
 }
 
-void read_rx_buf() {
-	while ( rx_buf.tail != rx_buf.head) {
-		if (debug) {
-			PCsrl.write(rx_buf.buffer[rx_buf.tail]);
-		}
-		rx_buf.tail = (unsigned int) (rx_buf.tail+ 1) % SERIAL_BUFFER_SIZE;
-	}
+void read_rx_buf()
+{
+  while (rx_buf.tail != rx_buf.head) {
+    if (debug) {
+      PCsrl.write(rx_buf.buffer[rx_buf.tail]);
+    }
+    rx_buf.tail = (unsigned int) (rx_buf.tail+ 1) % SERIAL_BUFFER_SIZE;
+  }
 }
 
 inline void store_char(unsigned char c, ring_buffer *buffer)
@@ -289,4 +314,3 @@ inline void store_char(unsigned char c, ring_buffer *buffer)
     Serial.println("ring buffer is too small");
   }
 }
-
