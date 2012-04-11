@@ -60,16 +60,13 @@ class Command {
     int start_s2ip();
     void quit_s2ip();
     
-    // return 1 if drone is initialized
     int init_drone();
     
     int drone_takeoff();
-    
-    // return 1 if drone is hovering
-    int drone_hover();
-    
+    int drone_hover(int time);
     int drone_landing();
-    int drone_move();
+    int drone_move_up();
+    int drone_move_down();
     
     void readARsrl();
     

@@ -68,7 +68,7 @@ String Command::sendRef(flying_status fs, int emergency)
 int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
-  String moveForward = makePcmd(1, 0, (float) 1, 0, 0);
+  String moveForward = makePcmd(1, 0, 1, 0, 0);
   sendPcmd(moveForward);
   delay(200);
   while (i < distanceInMeters) {
@@ -91,7 +91,7 @@ int Command::moveForward(float distanceInMeters)
 int Command::moveRotate(float yawInDegrees)
 {
   float i = 0;
-  String moveRotate = makePcmd(1, 0, 0, (float) 1, 0);
+  String moveRotate = makePcmd(1, 0, 0, 1, 0);
   sendPcmd(moveRotate);
   delay(200);
   while (i < yawInDegrees/10) {
@@ -111,10 +111,10 @@ int Command::moveRotate(float yawInDegrees)
   sendPcmd(hover);*/
 }
 
-String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
+String Command::makePcmd(int enable, int roll, int pitch, int gaz, int yaw)
 {
   at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r\n";
+  command = at + sequenceNumber + "," + enable + "," + roll + "," + pitch + "," + gaz + "," + yaw + "\r\n";
   sequenceNumber++;
   return command;
 }
@@ -211,41 +211,46 @@ int Command::init_drone()
 int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
-  
-  int i = 0;
-  while (i < 30) {
-    ARsrl << makePcmd(1, (float) 0, (float) 0, (float) 1, (float) 0);
-    delay(100);
-    i++;
-  }
+  drone_move_up();
   return 1;
 }
 
-int Command::drone_hover()
+int Command::drone_hover(int time)
 {
-  ARsrl << makePcmd(1, (float) 0, (float) 0, (float) 0, (float) 0);
+  int i = 0;
+  while (i < time) {
+    ARsrl << makePcmd(1, 0, 0, 0, 0);
+    delay(200);
+    i += 200;
+  }
   return 1;
 }
 
 int Command::drone_landing()
 {
   ARsrl << sendRef(LANDING);
+  drone_move_down();
+  return 1;
+}
+
+int Command::drone_move_up()
+{
   int i = 0;
-  while (i < 10) {
-    ARsrl << makePcmd(1, (float) 0, (float) 0, (float) -1, (float) 0);
+  while (i < 30) {
+    ARsrl << makePcmd(1, 0, 0, 1, 0);
     delay(100);
     i++;
   }
   return 1;
 }
 
-int Command::drone_move()
+int Command::drone_move_down()
 {
   int i = 0;
-  while (i < 4) {
-    ARsrl << makePcmd(1, (float) 1, (float) 0, (float) 0, (float) 0);
-    i++;
+  while (i < 30) {
+    ARsrl << makePcmd(1, 0, 0, -1, 0);
     delay(100);
+    i++;
   }
   return 1;
 }
