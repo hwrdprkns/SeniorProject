@@ -237,7 +237,7 @@ int Command::drone_landing()
 int Command::drone_move_up()
 {
   int i = 0;
-  while (i < 1) {
+  while (i < 50) {
     ARsrl << makePcmd(1, 0, 0, 1, 0);
     delay(100);
     i++;
@@ -248,7 +248,7 @@ int Command::drone_move_up()
 int Command::drone_move_down()
 {
   int i = 0;
-  while (i < 1) {
+  while (i < 30) {
     ARsrl << makePcmd(1, 0, 0, -1, 0);
     delay(100);
     i++;
