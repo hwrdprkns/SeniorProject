@@ -242,24 +242,24 @@ int Command::drone_landing()
   return 1;
 }
 
-int Command::drone_move_up()
+int Command::drone_move_up(int centimeter)
 {
   int i = 0;
-  while (i < 50) {
-    ARsrl << makePcmd(1, 0, 0, 1, 0);
+  while (i < centimeter) {
+    ARsrl << makePcmd(1, 0, 0, 0.5, 0);
     delay(100);
-    i++;
+    i = i+10;
   }
   return 1;
 }
 
-int Command::drone_move_down()
+int Command::drone_move_down(int centimeter)
 {
   int i = 0;
-  while (i < 30) {
-    ARsrl << makePcmd(1, 0, 0, -1, 0);
+  while (i < centimeter) {
+    ARsrl << makePcmd(1, 0, 0, -0.5, 0);
     delay(100);
-    i++;
+    i = i+10;
   }
   return 1;
 }
