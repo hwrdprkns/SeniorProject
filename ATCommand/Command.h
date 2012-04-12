@@ -65,8 +65,8 @@ class Command {
     int drone_takeoff();
     int drone_hover(int msec);
     int drone_landing();
-    int drone_move_up();
-    int drone_move_down();
+    int drone_move_up(int centimeter);
+    int drone_move_down(int centimeter);
     
     void readARsrl();
     
