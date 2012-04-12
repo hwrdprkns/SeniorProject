@@ -10,9 +10,9 @@
  * calculateWaypoints
  **/
 
-float LATITUDES[] = {42.408083,42.40798,42.407934};
-float LONGITUDES[] = {-71.116326,-71.116253, -71.115977};
-int NUMBER_OF_WAYPOINTS = 3;
+float LATITUDES[] = {42.408275,42.408024};
+float LONGITUDES[] = { -71.115926, -71.116168};
+int NUMBER_OF_WAYPOINTS = 2;
 
 TinyGPS gps;
 
@@ -108,9 +108,9 @@ boolean checkSanity(){
   double bearingSanity = WayPoint::computeInitialBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
   double finalSanity = WayPoint::computeFinalBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
 
-  WayPoint::printDouble(distanceSanity,5);
-  WayPoint::printDouble(bearingSanity,5);
-  WayPoint::printDouble(finalSanity,5);
+  //WayPoint::printDouble(distanceSanity,5);
+  //WayPoint::printDouble(bearingSanity,5);
+  //WayPoint::printDouble(finalSanity,5);
 
   //boolean droneSanity = checkDroneSanity();
 
