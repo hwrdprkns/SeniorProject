@@ -2,6 +2,7 @@
 #include "TinyGps.h"
 #include <math.h>
 #include <SoftwareSerial.h>
+#include "Streaming.h"
 
 /**
  * This is the sketch for the following functions:
@@ -17,17 +18,21 @@ int NUMBER_OF_WAYPOINTS = 2;
 TinyGPS gps;
 
 float currentDistance;
+float lastLatitude;
+float lastLongitude;
+unsigned long lastAge;
 
 void setup()
 {
   Serial.begin(57600); // Baud rate of our GPS
-
 }
 
 void loop()
 {
   checkSanity();
-  navigatePath(0,WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]));
+  
+  double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
+  navigatePath(0,distance);
 } 
 
 void navigatePath(int state, double previousDistance){
@@ -75,6 +80,10 @@ float getCurrent(int param){
 	unsigned long age;
 	
 	gps.f_get_position(&latitude,&longitude,&age);
+
+       lastLatitude = latitude;
+       lastLongitude = longitude;
+       lastAge = age;
 	
 	if(param == 1) return latitude;
 	
@@ -85,6 +94,11 @@ unsigned long getAge(){
   float latitude,longitude;
   unsigned long age;
   gps.f_get_position(&latitude,&longitude,&age);
+  
+  lastLatitude = latitude;
+  lastLongitude = longitude;
+  lastAge = age;
+  
   return age;
 }
 
@@ -118,6 +132,7 @@ boolean checkSanity(){
 
   return isSaneDistance;
 }
+
 
 
 

@@ -424,3 +424,4 @@ float TinyGPS::f_speed_kmph()
 const float TinyGPS::GPS_INVALID_F_ANGLE = 1000.0;
 const float TinyGPS::GPS_INVALID_F_ALTITUDE = 1000000.0;
 const float TinyGPS::GPS_INVALID_F_SPEED = -1.0;
+

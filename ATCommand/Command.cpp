@@ -215,7 +215,7 @@ int Command::init_drone()
 int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
-  drone_move_up();
+  drone_move_up(150);
   return 1;
 }
 

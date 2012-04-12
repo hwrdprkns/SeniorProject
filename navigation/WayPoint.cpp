@@ -313,3 +313,4 @@ void WayPoint::printDouble(double val, byte precision){
   }
   Serial.write("\n");
 }
+
