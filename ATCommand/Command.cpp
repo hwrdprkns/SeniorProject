@@ -91,11 +91,11 @@ String Command::drone_emergency_reset()
 int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
-  String moveForward = makePcmd(1, 0, 1, 0, 0);
+  String moveForward = makePcmd(1, 0, -.855, 0, 0);
   sendPcmd(moveForward);
   delay(200);
   while (i < distanceInMeters) {
-    String stayForward = makePcmd(1, 0, 0, 0, 0);
+    String stayForward = makePcmd(1, 0, -.500, 0, 0);
     sendPcmd(stayForward);
     delay(200);
     i += 0.2;
