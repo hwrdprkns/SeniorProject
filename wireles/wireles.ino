@@ -1,39 +1,50 @@
-#include "Wirefree.h"
-
-WIFI_PROFILE wirelessProfile = { "ARDrone_?",       /* SSID */
-                        "" ,        /* WPA/WPA2 passphrase */
-                        "192.168.1.2" ,   /* IP address */
-                        "255.255.255.0" ,   /* subnet mask */
-                        "192.168.1.1"   ,   /* Gateway IP */
-                      };
-
-
-
-String droneServer = "192.168.1.1";
-int droneDefaultPort = 80;
-
-WifiClient drone(droneServer,droneDefaultPort);
-
-
-void parseRxData(String data){}
-
 void setup(){
   
-	Wireless.begin(&wirelessProfile,&parseRxData);
-	if(drone.connect()){
-		Serial.println("Holy shit I just came EVERYWHERE.");
-	} else {
-		Serial.println("Fucking failure.");
-	}
-  
+        Serial.begin(9600);
+        WIFIsrl.begin(9600);
+ 
+        WIFIsrl.print("+++");
+        delay(1250);
+        WIFIsrl.println("");
+        WIFIsrl.println("AT&F");
+        WIFIsrl.println("ATC1");
+        WIFIsrl.println("AT+WM=0");
+        WIFIsrl.println("AT+WS");
+        WIFIsrl.println("AT+WA=ardrone_154516");
+        WIFIsrl.println("AT+NDHCP=1");
+        
+        WIFIsrl.println("AT+NAUTO=0,0,192.168.1.1,5556");
+        //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
+        WIFIsrl.println("AT+NSTAT=?");
+        WIFIsrl.println("AT+CID=?");
+        WIFIsrl.print("ATA2\r");
+        
+        //WIFIsrl.print("AT*LED=1,2,1073741824,3\r");
+        
+        dronePrint();
+      
 }
+
+
 
 void loop(){
-	
-	while(drone.available()){
-		Serial.write(drone.read());
-	}
-	
-        drone.stop();
+        
+        while(WIFIsrl.available()){
+          Serial.write(WIFIsrl.read());
+        } 
+       
+        
+        //if(!sent){sent = true;dronePrint();}
+    
+        
 
 }
+
+void dronePrint(byte i){
+   String droneBlink = "AT*LED=1,2,1073741824,3\r";
+        
+        WIFIsrl.write("AT*LED=1,2,1073741824,3\r\n");
+}
+  
+
+

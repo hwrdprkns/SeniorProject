@@ -15,7 +15,6 @@ String atcmd = "";
 
 void setup()
 {
-  ARsrl.begin(115200);
   PCsrl.begin(115200);
   if (debug) {
     // never use three ! together in arduino code
@@ -23,11 +22,13 @@ void setup()
   }
   Timer3.initialize(SERIAL_INTERVAL_USEC);
   Timer3.attachInterrupt(SrlRead);
+  
+  com.start_wifi_connection();
 }
 
 void loop()
 {
-  if (com.s2ip_running == 0) {
+  /*if (com.s2ip_running == 0) {
     read_rx_buf();
     com.s2ip_running = com.start_s2ip();
     //upon exit s2ip_running == 1
@@ -48,8 +49,10 @@ void loop()
       }
       com.drone_takeoff();
       read_rx_buf();
+      */
      ARsrl << com.LEDAnim(2,1);
-      delay(1000);
+      delay(5000);
+      return;
       
       //ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND, 1);
       
@@ -68,11 +71,11 @@ void loop()
       //delay(1000);
       com.drone_landing();
       delay(500);
-    }
+    
     delay(500);
     
     com.quit_s2ip();
     com.s2ip_running == 0;
     delay(100000);
   }
-}
+

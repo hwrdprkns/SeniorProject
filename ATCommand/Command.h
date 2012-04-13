@@ -4,12 +4,13 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial1
+#define ARsrl Serial2
 #define PCsrl Serial
+#define WIFIsrl ARsrl
 
 #define BAUD 115200
 // adjust this base on how often you read your ring buffer
-#define SERIAL_BUFFER_SIZE 256
+#define SERIAL_BUFFER_SIZE 1042
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 
@@ -42,6 +43,10 @@ typedef enum {
 class Command {
   public:
     Command();
+    
+    int start_wifi_connection();
+    
+    
     String sendComwdg();
     String sendFtrim();
     String sendConfig(String option, String value);
