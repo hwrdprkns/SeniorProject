@@ -223,13 +223,16 @@ void Command::quit_s2ip()
 }
 
 int Command::init_drone()
-{  ARsrl << drone_emergency_reset();
+{  
+  
+  PCsrl << "I'm initing\r\n";
+   ARsrl << drone_emergency_reset();
   //ARsrl << sendComwdg();
   //ARsrl << sendConfig("general:navdata_demo","TRUE");
-  ARsrl << sendConfig("control:altitude_max","2000");
+   ARsrl << sendConfig("control:altitude_max","2000");
   //ARsrl << sendConfig("control:outdoor","FALSE");
   //ARsrl << sendConfig("control:flight_without_shell","FALSE");
-  //ARsrl << sendFtrim();
+   ARsrl << sendFtrim();
   //ARsrl << sendRef(LANDING,1); //clear emergency flag
   emergency = 0;
   
@@ -243,7 +246,6 @@ int Command::drone_takeoff()
   //ARsrl << sendRef(LANDING);
   ARsrl << sendRef(TAKEOFF);
   //ARsrl << sendRef(TAKEOFF,1);
-  delay(5000);
   /*
   int i = 0;
   while (i < 50) {
