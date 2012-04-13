@@ -18,6 +18,10 @@ Command::Command()
 }
 
 int Command::start_wifi_connection(){
+	
+	sequenceNumber = 100;
+	
+	
         WIFIsrl.begin(9600);
  
         WIFIsrl.print("+++");
@@ -76,14 +80,11 @@ String Command::sendRef(flying_status fs)
   return command;
 }
 
-String Command::sendRef(flying_status fs, int emergency)
+String Command::drone_emergency_reset()
 {
-  if (emergency == 1) {
-    String emergency_ready = sendRef(LANDING);
-    command = at + sequenceNumber + ",290717952\r\n";
+    command = "AT*REF=" + sequenceNumber + ",290717952\r\n";
     sequenceNumber++;
-    return emergency_ready + command;
-  }
+    return command;
 }
 
 /** Movement functions **/

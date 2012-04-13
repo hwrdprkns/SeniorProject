@@ -72,6 +72,7 @@ class Command {
     int drone_landing();
     int drone_move_up(int centimeter);
     int drone_move_down(int centimeter);
+	int drone_emergency_reset();
     
     void readARsrl();
     
