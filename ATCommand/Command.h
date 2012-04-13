@@ -53,7 +53,7 @@ class Command {
     String sendRef(flying_status fs);
 	  
     // clear emergency flag && fs set to LANDING if emergency == 1, 
-    String sendRef(flying_status fs, int emergency);
+    String drone_emergency_reset();
 	
     String makeAnim(anim_mayday_t anim, int time);
     String LEDAnim(int animseq, int duration);

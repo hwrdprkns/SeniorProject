@@ -35,7 +35,7 @@ int Command::start_wifi_connection(){
         //WIFIsrl.println("AT+CID=?");
         WIFIsrl.print("ATA2\r");
         
-        PCsrl.println("This is a test!");
+        sequenceNumber = 100;
 }  
 
 String Command::sendComwdg()
@@ -65,6 +65,9 @@ String Command::sendConfig(String option, String value)
 String Command::sendRef(flying_status fs)
 {
   at = "AT*REF=";
+  if (sequenceNumber < 100) {
+    sequenceNumber = 101;
+  }
   if(fs == TAKEOFF){
     command = at + sequenceNumber + ",290718208\r\n"; //takeoff
   }
@@ -76,14 +79,12 @@ String Command::sendRef(flying_status fs)
   return command;
 }
 
-String Command::sendRef(flying_status fs, int emergency)
+String Command::drone_emergency_reset()
 {
-  if (emergency == 1) {
-    String emergency_ready = sendRef(LANDING);
+  at = "AT*REF=";
     command = at + sequenceNumber + ",290717952\r\n";
     sequenceNumber++;
-    return emergency_ready + command;
-  }
+    return command;
 }
 
 /** Movement functions **/
@@ -162,7 +163,7 @@ String Command::LEDAnim(int animseq, int duration)
 {
   //PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
-  command = at + sequenceNumber + "," + animseq +",1073741824," + duration + "\r\n";
+  command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
   
   //PCsrl << command;
@@ -222,14 +223,13 @@ void Command::quit_s2ip()
 }
 
 int Command::init_drone()
-{
-  ARsrl << sendComwdg();
-  //ARsrl << LEDAnim(2);
-  ARsrl << sendConfig("general:navdata_demo","TRUE");
+{  ARsrl << drone_emergency_reset();
+  //ARsrl << sendComwdg();
+  //ARsrl << sendConfig("general:navdata_demo","TRUE");
   ARsrl << sendConfig("control:altitude_max","2000");
   //ARsrl << sendConfig("control:outdoor","FALSE");
   //ARsrl << sendConfig("control:flight_without_shell","FALSE");
-  ARsrl << sendFtrim();
+  //ARsrl << sendFtrim();
   //ARsrl << sendRef(LANDING,1); //clear emergency flag
   emergency = 0;
   
@@ -240,13 +240,18 @@ int Command::init_drone()
 
 int Command::drone_takeoff()
 {
+  //ARsrl << sendRef(LANDING);
   ARsrl << sendRef(TAKEOFF);
+  //ARsrl << sendRef(TAKEOFF,1);
+  delay(5000);
+  /*
   int i = 0;
   while (i < 50) {
     ARsrl << makePcmd(1, 0, 0, 1, 0);
     delay(100);
     i++;
-  }
+    
+  }*/
   return 1;
 }
 

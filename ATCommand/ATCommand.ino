@@ -20,17 +20,19 @@ void setup()
     // never use three ! together in arduino code
     PCsrl << "Whatever!\r\n";
   }
-  Timer3.initialize(SERIAL_INTERVAL_USEC);
-  Timer3.attachInterrupt(SrlRead);
+  //Timer3.initialize(SERIAL_INTERVAL_USEC);
+  //Timer3.attachInterrupt(SrlRead);
   
   com.start_wifi_connection();
 }
 
 void loop()
-{
+{    
     if (com.drone_is_init == 0) {
-      ARsrl << com.LEDAnim(2,3);
+      //ARsrl << com.LEDAnim(2,3);
+      //ARsrl << "AT*CONFIG=1,\"control:altitude_max\",\"2000\"";
       com.drone_is_init = com.init_drone();
+      
       
       read_rx_buf();
       delay(1000);
@@ -38,17 +40,17 @@ void loop()
     
     // drone take off
     if (com.drone_is_init == 1) {
-      if (debug) {
-        PCsrl << "drone is init" << endl;
-      }
+      PCsrl << "times ran " << i <<endl;
+  i++;
+      
       com.drone_takeoff();
       read_rx_buf();
       
       //com.moveForward(4);
-      ARsrl << com.LEDAnim(1,1);
+      //ARsrl << com.LEDAnim(1,1);
       //com.moveRotate(90);
-      delay(1000);
-      com.drone_hover(3000);
+      delay(5000);
+      //com.drone_hover(3000);
 
       //com.moveForward(4);
       /*int i = 0;
@@ -63,7 +65,7 @@ void loop()
     
     
     com.s2ip_running == 0;
-    delay(200000);
+    //delay(200000);
   }
 }
 
