@@ -26,9 +26,9 @@ int Command::start_wifi_connection(){
         WIFIsrl.println("AT&F");
         WIFIsrl.println("ATC1");
         WIFIsrl.println("AT+WM=0");
-        WIFIsrl.println("AT+WS");
-        WIFIsrl.println("AT+WA=ardrone_154516");
+        //WIFIsrl.println("AT+WS");
         WIFIsrl.println("AT+NDHCP=1");
+        WIFIsrl.println("AT+WA=ardrone_154516");
         WIFIsrl.println("AT+NAUTO=0,0,192.168.1.1,5556");
         //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
         //WIFIsrl.println("AT+NSTAT=?");
@@ -160,16 +160,17 @@ String Command::makeAnim(anim_mayday_t anim, int time)
 
 String Command::LEDAnim(int animseq, int duration)
 {
-  PCsrl << "calling LEDAnim" << endl;
+  //PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq +",1073741824," + duration + "\r\n";
   sequenceNumber++;
   
-  PCsrl << command;
+  //PCsrl << command;
   
   return command;
 }
 
+//not used
 int Command::start_s2ip()
 {
   char temp;
@@ -226,7 +227,8 @@ int Command::init_drone()
   //ARsrl << LEDAnim(2);
   ARsrl << sendConfig("general:navdata_demo","TRUE");
   ARsrl << sendConfig("control:altitude_max","2000");
-  ARsrl << sendConfig("control:outdoor","TRUE");
+  //ARsrl << sendConfig("control:outdoor","FALSE");
+  //ARsrl << sendConfig("control:flight_without_shell","FALSE");
   ARsrl << sendFtrim();
   //ARsrl << sendRef(LANDING,1); //clear emergency flag
   emergency = 0;
@@ -239,7 +241,12 @@ int Command::init_drone()
 int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
-  drone_move_up(150);
+  int i = 0;
+  while (i < 50) {
+    ARsrl << makePcmd(1, 0, 0, 1, 0);
+    delay(100);
+    i++;
+  }
   return 1;
 }
 

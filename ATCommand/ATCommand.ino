@@ -28,18 +28,12 @@ void setup()
 
 void loop()
 {
-  /*if (com.s2ip_running == 0) {
-    read_rx_buf();
-    com.s2ip_running = com.start_s2ip();
-    //upon exit s2ip_running == 1
-  }
-  
-  if (com.s2ip_running == 1) {
-    delay(200);
-    
     if (com.drone_is_init == 0) {
+      ARsrl << com.LEDAnim(2,3);
       com.drone_is_init = com.init_drone();
+      
       read_rx_buf();
+      delay(1000);
     }
     
     // drone take off
@@ -49,17 +43,12 @@ void loop()
       }
       com.drone_takeoff();
       read_rx_buf();
-      */
-     ARsrl << com.LEDAnim(2,1);
-      delay(5000);
-      return;
-      
-      //ARsrl << com.makeAnim(ARDRONE_ANIM_TURNAROUND, 1);
       
       //com.moveForward(4);
       ARsrl << com.LEDAnim(1,1);
-      com.moveRotate(90);
+      //com.moveRotate(90);
       delay(1000);
+      com.drone_hover(3000);
 
       //com.moveForward(4);
       /*int i = 0;
@@ -72,10 +61,9 @@ void loop()
       com.drone_landing();
       delay(500);
     
-    delay(500);
     
-    com.quit_s2ip();
     com.s2ip_running == 0;
-    delay(100000);
+    delay(200000);
   }
+}
 
