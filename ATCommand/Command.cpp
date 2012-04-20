@@ -17,37 +17,55 @@ Command::Command()
   emergency = 0;
 }
 
-int Command::start_wifi_connection(){
-	
-	sequenceNumber = 100;
-	
-	
-        WIFIsrl.begin(9600);
- 
-        WIFIsrl.print("+++");
-        delay(1250);
-        WIFIsrl.println("");
-        WIFIsrl.println("AT&F");
-        WIFIsrl.println("ATC1");
-        WIFIsrl.println("AT+WM=0");
-        //WIFIsrl.println("AT+WS");
-        WIFIsrl.println("AT+NDHCP=1");
-        WIFIsrl.println("AT+WA=ardrone_154516");
-        WIFIsrl.println("AT+NAUTO=0,0,192.168.1.1,5556");
-        //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
-        //WIFIsrl.println("AT+NSTAT=?");
-        //WIFIsrl.println("AT+CID=?");
-        WIFIsrl.print("ATA2\r");
-        
-        sequenceNumber = 100;
+int Command::start_wifi_connection()
+{
+  WIFIsrl.begin(9600);
+  
+  WIFIsrl.print("+++");
+  delay(1250);
+  
+  WIFIsrl.println("");
+  WIFIsrl.println("AT&F");
+  readARsrl();
+  //WIFIsrl.println("ATC1");
+  readARsrl();
+  WIFIsrl.println("ATE0"); //turn off echo
+  WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
+  WIFIsrl.println("AT+WM=0");
+  //WIFIsrl.println("AT+WS");
+  WIFIsrl.println("AT+NDHCP=1");
+  readARsrl();
+  WIFIsrl.println("AT+WA=ardrone_154516");
+  readARsrl();
+  WIFIsrl.println("AT+NAUTO=0,0,192.168.1.1,5556");
+  readARsrl();
+  //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
+  //WIFIsrl.println("AT+NSTAT=?");
+  readARsrl();
+  //WIFIsrl.println("AT+CID=?");
+  WIFIsrl.print("ATA2\r");
+  delay(500);
+  return 0;
 }  
 
-String Command::sendComwdg()
+String Command::makeComwdg()
 {
   at = "AT*COMWDG=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
+  
+  if (debug) {
+    PCsrl << command;
+  }
   return command;
+}
+
+void Command::sendComwdg_t(int msec)
+{
+  for (int i = 0; i < msec; i += 20) {
+    ARsrl << makeComwdg();
+    delay(20);
+  }
 }
 
 String Command::sendFtrim()
@@ -69,9 +87,6 @@ String Command::sendConfig(String option, String value)
 String Command::sendRef(flying_status fs)
 {
   at = "AT*REF=";
-  if (sequenceNumber < 100) {
-    sequenceNumber = 101;
-  }
   if(fs == TAKEOFF){
     command = at + sequenceNumber + ",290718208\r\n"; //takeoff
   }
@@ -85,12 +100,10 @@ String Command::sendRef(flying_status fs)
 
 String Command::drone_emergency_reset()
 {
-
   at = "AT*REF=";
-    command = at + sequenceNumber + ",290717952\r\n";
-
-    sequenceNumber++;
-    return command;
+  command = at + sequenceNumber + ",290717952\r\n";
+  sequenceNumber++;
+  return command;
 }
 
 /** Movement functions **/
@@ -99,22 +112,13 @@ int Command::moveForward(float distanceInMeters)
   float i = 0;
   String moveForward = makePcmd(1, 0, -.855, 0, 0);
   sendPcmd(moveForward);
-  delay(200);
-  while (i < distanceInMeters) {
+  /*while (i < distanceInMeters) {
     String stayForward = makePcmd(1, 0, -.500, 0, 0);
     sendPcmd(stayForward);
     delay(200);
     i += 0.2;
-  }
+  }*/
   return 1;
-  
-  /*int pitchCalibrationFactor = -1;
-  int delayFactor = 3;
-  String moveForward = makePcmd(1,lastRoll,(lastPitch - pitchCalibrationFactor),lastGaz,lastYaw);
-  sendPcmd(command);
-  delay(delayFactor*distanceInMeters*50); //This is in millis, right?
-  String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
-  sendPcmd(hover);*/
 }
 
 int Command::moveRotate(float yawInDegrees)
@@ -128,19 +132,9 @@ int Command::moveRotate(float yawInDegrees)
     String stayRotate = makePcmd(1, 0, 0, 0, 0.17);
     sendPcmd(stayRotate);
     delay(150);
-    i = i+8;
+    i += 8;
   }
- 
   return 1;
-  
-  
-  /*int rotateCalibrationFactor = 5;
-  int delayFactor = 3;
-  String moveRotate = makePcmd(1,lastRoll,lastPitch,lastGaz,(lastYaw + yawInDegrees*rotateCalibrationFactor));
-  sendPcmd(moveRotate);
-  delay(delayFactor*rotateCalibrationFactor*50);//Again... in millis?
-  String hover = makePcmd(1,lastRoll,lastPitch,lastGaz,lastYaw);
-  sendPcmd(hover);*/
 }
 
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
@@ -177,7 +171,7 @@ String Command::LEDAnim(int animseq, int duration)
   return command;
 }
 
-//not used
+// not used
 int Command::start_s2ip()
 {
   char temp;
@@ -229,36 +223,27 @@ void Command::quit_s2ip()
 }
 
 int Command::init_drone()
-{  
-  
+{
   PCsrl << "I'm initing\r\n";
-   ARsrl << drone_emergency_reset();
+  ARsrl << drone_emergency_reset();
   //ARsrl << sendComwdg();
-  //ARsrl << sendConfig("general:navdata_demo","TRUE");
-   ARsrl << sendConfig("control:altitude_max","2000");
-  //ARsrl << sendConfig("control:outdoor","FALSE");
-  //ARsrl << sendConfig("control:flight_without_shell","FALSE");
-   ARsrl << sendFtrim();
+  ARsrl << sendConfig("general:navdata_demo","TRUE");
+  ARsrl << sendConfig("control:altitude_max","2000");
+  ARsrl << sendConfig("control:outdoor","FALSE");
+  ARsrl << sendConfig("control:flight_without_shell","FALSE");
+  ARsrl << sendFtrim();
   //ARsrl << sendRef(LANDING,1); //clear emergency flag
-  emergency = 0;
-  
-  //do some checking??
-  
   return 1;
 }
 
 int Command::drone_takeoff()
 {
-  //ARsrl << sendRef(LANDING);
   ARsrl << sendRef(TAKEOFF);
-  //ARsrl << sendRef(TAKEOFF,1);
-  /*
-  int i = 0;
+  /*int i = 0;
   while (i < 50) {
-    ARsrl << makePcmd(1, 0, 0, 1, 0);
+    ARsrl << makePcmd(1, 0, 0, 0.9, 0);
     delay(100);
     i++;
-    
   }*/
   return 1;
 }
@@ -277,12 +262,13 @@ int Command::drone_hover(int msec)
 int Command::drone_landing()
 {
   ARsrl << sendRef(LANDING);
-  int i = 0;
+  /*int i = 0;
   while (i < 50) {
-    ARsrl << makePcmd(1, 0, 0, -1, 0);
+    // dont change anything here, arduino has a grudge
+    //ARsrl << makePcmd(1, 0, 0, -0.9, 0);
     delay(100);
     i++;
-  }
+  }*/
   return 1;
 }
 
@@ -292,7 +278,7 @@ int Command::drone_move_up(int centimeter)
   while (i < centimeter) {
     ARsrl << makePcmd(1, 0, 0, 0.5, 0);
     delay(100);
-    i = i+10;
+    i += 10;
   }
   return 1;
 }
@@ -303,7 +289,7 @@ int Command::drone_move_down(int centimeter)
   while (i < centimeter) {
     ARsrl << makePcmd(1, 0, 0, -0.5, 0);
     delay(100);
-    i = i+10;
+    i += 10;
   }
   return 1;
 }

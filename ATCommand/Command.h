@@ -13,13 +13,13 @@
 #define SERIAL_BUFFER_SIZE 1042
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
+#define COMWDG_INTERVAL_USEC 600000
 
 typedef enum {
 	TAKEOFF,
 	LANDING
 } flying_status;
 
-// Mayday scenario
 typedef enum {
 	ARDRONE_ANIM_PHI_M30_DEG= 0,
 	ARDRONE_ANIM_PHI_30_DEG,
@@ -46,21 +46,18 @@ class Command {
     
     int start_wifi_connection();
     
-    
-    String sendComwdg();
+    //void sendComwdg();
+    String makeComwdg();
+    void sendComwdg_t(int msec);
     String sendFtrim();
     String sendConfig(String option, String value);
     String sendRef(flying_status fs);
 	  
-    // clear emergency flag && fs set to LANDING if emergency == 1, 
+    // clear emergency flag 
     String drone_emergency_reset();
 	
     String makeAnim(anim_mayday_t anim, int time);
     String LEDAnim(int animseq, int duration);
-    
-    //void flightMode();
-    //void checkStatus();
-    //void checkSequenceNumber();
     
     int start_s2ip();
     void quit_s2ip();
@@ -72,7 +69,6 @@ class Command {
     int drone_landing();
     int drone_move_up(int centimeter);
     int drone_move_down(int centimeter);
-	int drone_emergency_reset();
     
     void readARsrl();
     
@@ -83,7 +79,7 @@ class Command {
     
     /** Moving functions **/
     
-    /** When these functions are done (the drone has moved), they will return 1. **/
+    /** When these functions are done (the drone has moved), they will return 1 **/
     int moveForward(float distanceInMeters);
     int moveRotate(float yawInDegrees);
     	
@@ -92,14 +88,11 @@ class Command {
     String command;
     
     long fl2int(float value);
+    
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     void sendPcmd(String pcmd);
     
     String previousCommand;
-    /*float lastRoll; 
-    float lastPitch; 
-    float lastGaz;
-    float lastYaw;*/
 };
 
 struct ring_buffer
@@ -109,7 +102,8 @@ struct ring_buffer
   volatile int tail;
 };
 
-union resultint_{
+union resultint_
+{
   long i;
   float f;
 };
