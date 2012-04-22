@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial2
+#define ARsrl Serial
 #define PCsrl Serial
 #define WIFIsrl ARsrl
 
@@ -59,6 +59,7 @@ class Command {
     String makeAnim(anim_mayday_t anim, int time);
     String LEDAnim(int animseq, int duration);
     
+	/* only used under serial connection, abandoned */
     int start_s2ip();
     void quit_s2ip();
     
@@ -92,7 +93,10 @@ class Command {
     
     long fl2int(float value);
     
+	// should be obsolete
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+	//new ones
+	void sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
     void sendPcmd(String pcmd);
     
     String previousCommand;

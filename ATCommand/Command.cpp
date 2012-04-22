@@ -1,3 +1,5 @@
+#ifndef GAINSPAN
+#define GAINSPAN
 #include "Arduino.h"
 #include "Command.h"
 
@@ -35,10 +37,15 @@ int Command::start_wifi_connection()
   //WIFIsrl.print("+++");
   //delay(1250);
   
+#ifndef GAINSPAN
+	PCsrl << "no gainspan defined" << endl;
+#else
+	PCsrl << "gainspan defined" <<endl;
+#endif
+  
   WIFIsrl.println("");
-    WIFIsrl.println("AT&F");
+  WIFIsrl.println("AT&F");
   readARsrl();
-  //WIFIsrl.println("ATC1");
   readARsrl();
   //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
@@ -77,28 +84,40 @@ String Command::makeComwdg()
 void Command::sendComwdg_t(int msec)
 {
   for (int i = 0; i < msec; i += 20) {
+#ifndef GAINSPAN
     ARsrl << makeComwdg();
+#else
+	sendwifi(makeComwdg());
+#endif
     delay(20);
   }
 }
 
-String Command::sendFtrim()
+void Command::sendFtrim()
 {
   at = "AT*FTRIM=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
-  return command;
+#ifndef GAINSPAN
+    ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
-String Command::sendConfig(String option, String value)
+void Command::sendConfig(String option, String value)
 {
   at = "AT*CONFIG=";
   command = at + sequenceNumber + ",\"" + option + "\",\"" + value + "\"\r\n";
   sequenceNumber++;
-  return command;
+#ifndef GAINSPAN
+    ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
-String Command::sendRef(flying_status fs)
+void Command::sendRef(flying_status fs)
 {
   at = "AT*REF=";
   if(fs == TAKEOFF){
@@ -113,15 +132,23 @@ String Command::sendRef(flying_status fs)
   if (debug) {
     PCsrl << command << endl;
   }
-  return command;
+#ifndef GAINSPAN
+    ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
-String Command::drone_emergency_reset()
+void Command::drone_emergency_reset()
 {
   at = "AT*REF=";
   command = at + sequenceNumber + ",290717952\r\n";
   sequenceNumber++;
-  return command;
+#ifndef GAINSPAN
+    ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
 /** Movement functions **/
@@ -160,13 +187,29 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
   at = "AT*PCMD=";
   command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
-  return command;
+	return command;
 }
 
 void Command::sendPcmd(String command)
 {
   previousCommand = command;
+#ifndef GAINSPAN
   ARsrl << command;
+#else
+	sendwifi(command);
+#endif
+}
+
+void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw)
+{
+  at = "AT*PCMD=";
+  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
+  sequenceNumber++;
+#ifndef GAINSPAN
+  ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
 String Command::makeAnim(anim_mayday_t anim, int time)
@@ -191,7 +234,6 @@ String Command::LEDAnim(int animseq, int duration)
   return command;
 }
 
-// not used
 int Command::start_s2ip()
 {
   char temp;
@@ -385,3 +427,5 @@ inline void store_char(unsigned char c, ring_buffer *buffer)
     Serial.println("ring buffer is too small");
   }
 }
+
+#endif

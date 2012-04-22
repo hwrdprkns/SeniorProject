@@ -34,13 +34,8 @@ void setup()
 
 void loop()
 {  
-  for ( int i = 0; i < 10; i++ ) {
-    PCsrl << "Whatever123!\r\n";
-    com.sendwifi("yeah!d\n");
-    delay(1000);
-//com.sendwifi(i);
-  }
-  
+	com.sendComwdg_t(100);
+	
   delay(100000); //turn off
     
   if (com.drone_is_init == 0) {
