@@ -46,20 +46,18 @@ int Command::start_wifi_connection()
   //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
   readARsrl();
-  //WIFIsrl.println("AT+WA=ardrone_154516");
-  WIFIsrl.println("AT+WA=edz");
-  WIFIsrl.println("AT+NCUDP=10.42.43.1,5556");
+  
+  /* drone's network profile, change if needed*/
+  WIFIsrl.println("AT+WA=ardrone_154516");
+  WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
   
   // abandon autoconnection mode
   //WIFIsrl.println("AT+NAUTO=0,0,192.168.1.3,5556");
-  //readARsrl();
-
-  //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   //WIFIsrl.println("AT+NSTAT=?");
-  readARsrl();
   //WIFIsrl.println("AT+CID=?");
   //WIFIsrl.print("ATA2\r");
+  
   delay(3000); //need 3 seconds for connection to establish
   return 0;
 }  
