@@ -17,34 +17,50 @@ Command::Command()
   emergency = 0;
 }
 
+
+void Command::sendwifi(String s) {
+    WIFIsrl.write(27); //esc
+    WIFIsrl.print("S0"); //choose connection CID 0
+    WIFIsrl.print(s);
+    WIFIsrl.write(27);
+    WIFIsrl.print("E");
+}
+
+
 int Command::start_wifi_connection()
 {
   WIFIsrl.begin(9600);
   
-  WIFIsrl.print("+++");
-  delay(1250);
+  //abandoned along with autoconnection mode
+  //WIFIsrl.print("+++");
+  //delay(1250);
   
   WIFIsrl.println("");
-  WIFIsrl.println("AT&F");
+    WIFIsrl.println("AT&F");
   readARsrl();
   //WIFIsrl.println("ATC1");
   readARsrl();
-  WIFIsrl.println("ATE0"); //turn off echo
+  //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
   //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
   readARsrl();
-  WIFIsrl.println("AT+WA=ardrone_154516");
+  //WIFIsrl.println("AT+WA=ardrone_154516");
+  WIFIsrl.println("AT+WA=edz");
+  WIFIsrl.println("AT+NCUDP=10.42.43.1,5556");
   readARsrl();
-  WIFIsrl.println("AT+NAUTO=0,0,192.168.1.1,5556");
-  readARsrl();
+  
+  // abandon autoconnection mode
+  //WIFIsrl.println("AT+NAUTO=0,0,192.168.1.3,5556");
+  //readARsrl();
+
   //WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   //WIFIsrl.println("AT+NSTAT=?");
   readARsrl();
   //WIFIsrl.println("AT+CID=?");
-  WIFIsrl.print("ATA2\r");
-  delay(500);
+  //WIFIsrl.print("ATA2\r");
+  delay(3000); //need 3 seconds for connection to establish
   return 0;
 }  
 
@@ -95,6 +111,10 @@ String Command::sendRef(flying_status fs)
   }
   // emergency -> 290717952
   sequenceNumber++;
+  
+  if (debug) {
+    PCsrl << command << endl;
+  }
   return command;
 }
 
@@ -140,7 +160,7 @@ int Command::moveRotate(float yawInDegrees)
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
   at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r\n";
+  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
   return command;
 }
@@ -166,7 +186,9 @@ String Command::LEDAnim(int animseq, int duration)
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
   
-  //PCsrl << command;
+  if (debug) {
+    PCsrl << command << endl;
+  }
   
   return command;
 }
@@ -225,13 +247,19 @@ void Command::quit_s2ip()
 int Command::init_drone()
 {
   PCsrl << "I'm initing\r\n";
-  ARsrl << drone_emergency_reset();
-  //ARsrl << sendComwdg();
+  //ARsrl << drone_emergency_reset();
+  ARsrl << makeComwdg();
+  delay(50);
   ARsrl << sendConfig("general:navdata_demo","TRUE");
+  delay(50);
   ARsrl << sendConfig("control:altitude_max","2000");
+  delay(50);
   ARsrl << sendConfig("control:outdoor","FALSE");
+  delay(500);
   ARsrl << sendConfig("control:flight_without_shell","FALSE");
+  delay(50);
   ARsrl << sendFtrim();
+  delay(50);
   //ARsrl << sendRef(LANDING,1); //clear emergency flag
   return 1;
 }
@@ -239,8 +267,8 @@ int Command::init_drone()
 int Command::drone_takeoff()
 {
   ARsrl << sendRef(TAKEOFF);
-  /*int i = 0;
-  while (i < 50) {
+  int i = 0;
+  /*while (i < 50) {
     ARsrl << makePcmd(1, 0, 0, 0.9, 0);
     delay(100);
     i++;
@@ -276,7 +304,7 @@ int Command::drone_move_up(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
-    ARsrl << makePcmd(1, 0, 0, 0.5, 0);
+    ARsrl << makePcmd(1, 0, 0, 0.6, 0);
     delay(100);
     i += 10;
   }

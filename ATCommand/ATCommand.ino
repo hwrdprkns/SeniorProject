@@ -18,16 +18,14 @@ String atcmd = "";
 
 void setup()
 {
-  PCsrl.begin(115200);
+  PCsrl.begin(9600);
   if (debug) {
     // never use three ! together in arduino code
     PCsrl << "Whatever!\r\n";
   }
   
   com.start_wifi_connection();
-  com.drone_is_init = com.init_drone();
-  com.drone_takeoff();
-  com.drone_landing();
+
   
   //ARsrl << com.sendRef(LANDING);
   //Timer3.initialize(COMWDG_INTERVAL_USEC);
@@ -35,15 +33,38 @@ void setup()
 }
 
 void loop()
-{
-  if (com.drone_is_init == 0) {
-    PCsrl << "Drone initialization failed, please check connection\r\n";
-    delay(100000);
-    
-    /* not reached */
-    com.init_drone();
-    read_rx_buf();
+{  
+  for ( int i = 0; i < 10; i++ ) {
+    PCsrl << "Whatever123!\r\n";
+    com.sendwifi("yeah!d\n");
     delay(1000);
+//com.sendwifi(i);
+  }
+  
+  delay(100000); //turn off
+    
+  if (com.drone_is_init == 0) {
+        if (debug) {
+      // never use three ! together in arduino code
+      PCsrl << "initializing Drone\r\n";
+    }
+      com.drone_is_init = com.init_drone();
+      delay(30);
+      com.drone_takeoff();
+      delay(100);
+      // delay(3000);
+      com.drone_landing();
+      delay(30);
+      ARsrl << com.makeComwdg();
+      delay(30);
+      ARsrl << com.LEDAnim(2,3);
+  
+    //PCsrl << "Drone initialization failed, please check connection\r\n";
+    
+    /*  reached */
+    read_rx_buf();
+    delay(40);
+    //delay(1000000);
     
   } else {
     if (debug) {
@@ -51,10 +72,10 @@ void loop()
       PCsrl << "Drone initialized\r\n";
     }
     
-    //ARsrl << com.LEDAnim(2,3);
+    ARsrl << com.LEDAnim(2,3);
     
     com.drone_takeoff();
-    com.drone_move_up(100);
+    //com.drone_move_up(100);
     
     read_rx_buf();
     
@@ -62,13 +83,16 @@ void loop()
     com.moveForward(1);
     com.sendComwdg_t(400);*/
     
-    com.drone_hover(2000);
+    //com.drone_hover(2000);
     
     //delay(5000);
     
-    //com.drone_landing();
+    com.drone_landing();
     delay(500);
+    
+    //end of program
+    delay(400000);
   }
-  delay(4000);
+  
 }
 

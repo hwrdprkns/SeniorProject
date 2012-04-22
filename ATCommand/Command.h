@@ -82,6 +82,9 @@ class Command {
     /** When these functions are done (the drone has moved), they will return 1 **/
     int moveForward(float distanceInMeters);
     int moveRotate(float yawInDegrees);
+    
+    //can only call after wifi's connection established and CID is given as 0
+    void sendwifi(String s);
     	
   private:
     String at;
@@ -94,6 +97,8 @@ class Command {
     
     String previousCommand;
 };
+
+
 
 struct ring_buffer
 {
