@@ -1,3 +1,4 @@
+
 #ifndef GAINSPAN
 #define GAINSPAN
 #include "Arduino.h"
@@ -8,6 +9,7 @@ extern int debug;
 
 ring_buffer rx_buf= {{0}, 0, 0};
 resultint_ resultint;
+
 
 Command::Command()
 {
@@ -26,12 +28,18 @@ void Command::sendwifi(String s) {
     WIFIsrl.print(s);
     WIFIsrl.write(27);
     WIFIsrl.print("E");
+    
+    if(debug) PCsrl << s;
+  
 }
+
 
 
 int Command::start_wifi_connection()
 {
   WIFIsrl.begin(9600);
+  
+  
   
   //abandoned along with autoconnection mode
   //WIFIsrl.print("+++");
@@ -45,17 +53,15 @@ int Command::start_wifi_connection()
   
   WIFIsrl.println("");
   WIFIsrl.println("AT&F");
-  readARsrl();
-  readARsrl();
   //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
+  
   //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
-  readARsrl();
   
   /* drone's network profile, change if needed*/
-  WIFIsrl.println("AT+WA=ardrone_154516");
+  WIFIsrl.println("AT+WA=ardrone_279440");
   WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
   
@@ -74,10 +80,6 @@ String Command::makeComwdg()
   at = "AT*COMWDG=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
-  
-  if (debug) {
-    PCsrl << command;
-  }
   return command;
 }
 
@@ -101,7 +103,7 @@ void Command::sendFtrim()
 #ifndef GAINSPAN
     ARsrl << command;
 #else
-	sendwifi(command);
+    sendwifi(command);
 #endif
 }
 
@@ -125,7 +127,10 @@ void Command::sendRef(flying_status fs)
   }
   else if(fs == LANDING){
     command = at + sequenceNumber + ",290717696\r\n"; //landing
+  } else if (fs == EMERGENCY_TOGGLE){
+    command = at + sequenceNumber + ",290717952\r\n"; //landing
   }
+   
   // emergency -> 290717952
   sequenceNumber++;
   
@@ -135,8 +140,18 @@ void Command::sendRef(flying_status fs)
 #ifndef GAINSPAN
     ARsrl << command;
 #else
-	sendwifi(command);
+    sendwifi(command);
 #endif
+}
+
+void Command::send_control_commands(){
+    at = "AT*CTRL=";
+    sendwifi(at+sequenceNumber+",4,0\r\n");
+    sequenceNumber++;
+    sendwifi(at+sequenceNumber+",0,0\r\n");
+    sequenceNumber++;
+    sendwifi(at+sequenceNumber+",4,0\r\n");
+    sequenceNumber++;
 }
 
 void Command::drone_emergency_reset()
@@ -187,7 +202,7 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
   at = "AT*PCMD=";
   command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
-	return command;
+  return command;
 }
 
 void Command::sendPcmd(String command)
@@ -220,18 +235,17 @@ String Command::makeAnim(anim_mayday_t anim, int time)
   return command;
 }
 
-String Command::LEDAnim(int animseq, int duration)
+void Command::doLEDAnim(int animseq, int duration)
 {
-  //PCsrl << "calling LEDAnim" << endl;
+  PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
-  
-  if (debug) {
-    PCsrl << command << endl;
-  }
-  
-  return command;
+#ifndef GAINSPAN
+  ARsrl << command;
+#else
+	sendwifi(command);
+#endif
 }
 
 int Command::start_s2ip()
@@ -287,26 +301,23 @@ void Command::quit_s2ip()
 int Command::init_drone()
 {
   PCsrl << "I'm initing\r\n";
-  //ARsrl << drone_emergency_reset();
-  ARsrl << makeComwdg();
+  sendConfig("general:navdata_demo","TRUE");
+  sendConfig("control:altitude_max","2000");
+  sendConfig("control:euler_angle_max","0.35");
+  sendConfig("control:outdoor","FALSE");
+  sendConfig("control:flight_without_shell","FALSE");
+  send_control_commands();
+  sendComwdg_t(100);
+  sendFtrim();
   delay(50);
-  ARsrl << sendConfig("general:navdata_demo","TRUE");
-  delay(50);
-  ARsrl << sendConfig("control:altitude_max","2000");
-  delay(50);
-  ARsrl << sendConfig("control:outdoor","FALSE");
-  delay(500);
-  ARsrl << sendConfig("control:flight_without_shell","FALSE");
-  delay(50);
-  ARsrl << sendFtrim();
-  delay(50);
-  //ARsrl << sendRef(LANDING,1); //clear emergency flag
+  drone_emergency_reset(); //clear emergency flag
+  
   return 1;
 }
 
 int Command::drone_takeoff()
 {
-  ARsrl << sendRef(TAKEOFF);
+  sendRef(TAKEOFF);
   int i = 0;
   /*while (i < 50) {
     ARsrl << makePcmd(1, 0, 0, 0.9, 0);
@@ -320,7 +331,11 @@ int Command::drone_hover(int msec)
 {
   int i = 0;
   while (i < msec) {
-    ARsrl << makePcmd(1, 0, 0, 0, 0);
+#ifndef GAINSPAN
+  ARsrl << makePcmd(1, 0, 0, 0, 0);
+#else
+	sendwifi(makePcmd(1, 0, 0, 0, 0));
+#endif
     delay(100);
     i += 100;
   }
@@ -329,7 +344,7 @@ int Command::drone_hover(int msec)
 
 int Command::drone_landing()
 {
-  ARsrl << sendRef(LANDING);
+  sendRef(LANDING);
   /*int i = 0;
   while (i < 50) {
     // dont change anything here, arduino has a grudge
@@ -344,6 +359,7 @@ int Command::drone_move_up(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
+  
     ARsrl << makePcmd(1, 0, 0, 0.6, 0);
     delay(100);
     i += 10;
@@ -355,7 +371,11 @@ int Command::drone_move_down(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
+#ifndef GAINSPAN
     ARsrl << makePcmd(1, 0, 0, -0.5, 0);
+#else
+	sendwifi(makePcmd(1, 0, 0, -0.5, 0));
+#endif
     delay(100);
     i += 10;
   }

@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial
+#define ARsrl Serial2
 #define PCsrl Serial
 #define WIFIsrl ARsrl
 
@@ -17,7 +17,9 @@
 
 typedef enum {
 	TAKEOFF,
-	LANDING
+	LANDING,
+        EMERGENCY_TOGGLE
+
 } flying_status;
 
 typedef enum {
@@ -49,15 +51,16 @@ class Command {
     //void sendComwdg();
     String makeComwdg();
     void sendComwdg_t(int msec);
-    String sendFtrim();
-    String sendConfig(String option, String value);
-    String sendRef(flying_status fs);
+    void sendFtrim();
+    void sendConfig(String option, String value);
+    void sendRef(flying_status fs);
+    void send_control_commands();
 	  
     // clear emergency flag 
-    String drone_emergency_reset();
+    void drone_emergency_reset();
 	
     String makeAnim(anim_mayday_t anim, int time);
-    String LEDAnim(int animseq, int duration);
+    void doLEDAnim(int animseq, int duration);
     
 	/* only used under serial connection, abandoned */
     int start_s2ip();
@@ -86,6 +89,9 @@ class Command {
     
     //can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
+    
+    // should be obsolete
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     	
   private:
     String at;
@@ -93,8 +99,7 @@ class Command {
     
     long fl2int(float value);
     
-	// should be obsolete
-    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+
 	//new ones
 	void sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
     void sendPcmd(String pcmd);

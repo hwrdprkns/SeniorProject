@@ -12,9 +12,7 @@ String atcmd = "";
 #include "TimerThree.h"
 #define LEDpin 13
 
-/*void watchdog_timer() {
-  ARsrl << com.makeComwdg();
-}*/
+
 
 void setup()
 {
@@ -26,24 +24,29 @@ void setup()
   
   com.start_wifi_connection();
 
+  Timer3.initialize(COMWDG_INTERVAL_USEC);
+  com.drone_is_init = com.init_drone();
   
-  //ARsrl << com.sendRef(LANDING);
-  //Timer3.initialize(COMWDG_INTERVAL_USEC);
-  //Timer3.attachInterrupt(watchdog_timer);
+  Timer3.attachInterrupt(watchdog_timer);
+  
+}
+
+void watchdog_timer() {
+  com.sendwifi(com.makeComwdg());
 }
 
 void loop()
 {  
-	com.sendComwdg_t(100);
-	
-  delay(100000); //turn off
-    
+	  
   if (com.drone_is_init == 0) {
         if (debug) {
       // never use three ! together in arduino code
-      PCsrl << "initializing Drone\r\n";
+      PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
     }
-      com.drone_is_init = com.init_drone();
+    
+
+    
+    /*
       delay(30);
       com.drone_takeoff();
       delay(100);
@@ -53,41 +56,43 @@ void loop()
       ARsrl << com.makeComwdg();
       delay(30);
       ARsrl << com.LEDAnim(2,3);
+      
+      */
   
     //PCsrl << "Drone initialization failed, please check connection\r\n";
     
-    /*  reached */
+    /*  reached 
     read_rx_buf();
     delay(40);
     //delay(1000000);
+    */
     
   } else {
-    if (debug) {
-      // never use three ! together in arduino code
-      PCsrl << "Drone initialized\r\n";
-    }
-    
-    ARsrl << com.LEDAnim(2,3);
+     
+    com.doLEDAnim(2,3);
     
     com.drone_takeoff();
-    //com.drone_move_up(100);
+    com.drone_takeoff();
     
-    read_rx_buf();
+    com.sendwifi(com.makePcmd(1,0,0,0,0));
+    com.sendwifi(com.makePcmd(1,0,0,0,0));
+    delay(2000);
     
-    /*com.sendComwdg_t(400);
-    com.moveForward(1);
-    com.sendComwdg_t(400);*/
-    
-    //com.drone_hover(2000);
-    
-    //delay(5000);
+    for(int i =0;i<100;i++){
+      com.moveRotate(360);
+      delay(50);
+    }
+    delay(500);
     
     com.drone_landing();
+    com.drone_landing();
+    
     delay(500);
     
     //end of program
-    delay(400000);
+    Timer3.detachInterrupt();
+    while (1){};
+    
   }
-  
 }
 
