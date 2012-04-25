@@ -13,7 +13,6 @@ String atcmd = "";
 #define LEDpin 13
 
 
-
 void setup()
 {
   PCsrl.begin(9600);

@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include <stdlib.h> 
+#include <avr/pgmspace.h>
 #include "Streaming.h"
 
 #define ARsrl Serial
@@ -15,6 +16,15 @@
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 #define COMWDG_INTERVAL_USEC 600000
+
+
+////DEFINING STRINGS
+
+
+//////////////
+
+
+
 
 typedef enum {
 	TAKEOFF,
@@ -46,6 +56,8 @@ typedef enum {
 class Command {
   public:
     Command();
+    
+    char* bufferString(int which);
     
     int start_wifi_connection();
     
@@ -97,7 +109,6 @@ class Command {
     int getSequenceNumber();
     	
   private:
-    String at;
     String command;
     
     long fl2int(float value);
@@ -105,10 +116,12 @@ class Command {
     
 
 	//new ones
-	void sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
+    void sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
     void sendPcmd(String pcmd);
     
     String previousCommand;
+    
+    char buffer[30]; 
 };
 
 

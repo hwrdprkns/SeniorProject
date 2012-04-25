@@ -1,7 +1,9 @@
 
 #ifndef GAINSPAN
 #define GAINSPAN
+
 #include "Command.h"
+
 
 extern int sequenceNumber;
 extern int debug;
@@ -9,10 +11,29 @@ extern int debug;
 ring_buffer rx_buf= {{0}, 0, 0};
 resultint_ resultint;
 
+const char ATF[] PROGMEM = "AT&F";
+const char ATMAC[] PROGMEM = "AT+NMAC=00:1d:c9:10:39:6f\r";
+const char ATWM[] PROGMEM = "AT+WM=0";
+const char ATNDHCP[] PROGMEM = "AT+NDHCP=1";
+const char ATNCUDP[] PROGMEM = "AT+NCUDP=192.168.1.1,5556";
+
+const char ATCONFIG[] PROGMEM = "AT*CONFIG=";
+const char ATCOMWDG[] PROGMEM = "AT*COMWDG=";
+const char ATPCMD[] PROGMEM = "AT*CTRL="
+
+
+
+const char *wirelessTable[] PROGMEM =	   // change "string_table" name to suit
+{   
+  ATF,
+  ATMAC,
+  ATWM,
+  ATNDHCP,
+  ATNCUDP}; 
+
 
 Command::Command()
 {
-  at = "";
   command = "";
   s2ip_running = 0;
   drone_is_init = 0;
@@ -42,26 +63,33 @@ int Command::start_wifi_connection()
   WIFIsrl.begin(9600);
  
   WIFIsrl.println("");
-  WIFIsrl.println("AT&F");
+  WIFIsrl.println(bufferString(0));
   //WIFIsrl.println("ATE0"); //turn off echo
-  WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
-  WIFIsrl.println("AT+WM=0");
+  WIFIsrl.print(bufferString(1)); //set MAC address
+  WIFIsrl.println(bufferString(2));
   
-  WIFIsrl.println("AT+NDHCP=1");
+  WIFIsrl.println(bufferString(3));
   
   /* drone's network profile, change if needed*/
   WIFIsrl.println("AT+WA=ardrone_279440");
-  WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
+  WIFIsrl.println(bufferString(4));
   readARsrl();
 
   delay(3000); //need 3 seconds for connection to establish
   return 0;
 }  
 
+char* Command::bufferString(int which){
+  strcpy_P(buffer, (char*)pgm_read_word(&(wirelessTable[which])));
+  return buffer;
+}
+  
+  
+  
 String Command::makeComwdg()
 {
-  at = "AT*COMWDG=";
-  command = at + getSequenceNumber() + "\r\n";
+  String s = "AT*COMWDG=";
+  command = s + getSequenceNumber() + "\r\n";
   return command;
 }
 
@@ -75,21 +103,21 @@ void Command::sendComwdg_t(int msec)
 
 void Command::sendFtrim()
 {
-  at = "AT*FTRIM=";
+  String at = "AT*FTRIM=";
   command = at + getSequenceNumber() + "\r\n";
   sendwifi(command);
 }
 
 void Command::sendConfig(String option, String value)
 {
-  at = "AT*CONFIG=";
+  String at = "AT*CONFIG=";
   command = at + getSequenceNumber() + ",\"" + option + "\",\"" + value + "\"\r\n";
   sendwifi(command);
 }
 
 void Command::sendRef(flying_status fs)
 {
-  at = "AT*REF=";
+  String at = "AT*REF=";
   if(fs == TAKEOFF){
     command = at + getSequenceNumber() + ",290718208\r\n"; //takeoff
   }
@@ -104,7 +132,7 @@ void Command::sendRef(flying_status fs)
 }
 
 void Command::send_control_commands(){
-    at = "AT*CTRL=";
+    String at = "AT*CTRL=";
     sendwifi(at+getSequenceNumber()+",4,0\r\n");
     sendwifi(at+getSequenceNumber()+",0,0\r\n");
     sendwifi(at+getSequenceNumber()+",4,0\r\n");
@@ -112,7 +140,7 @@ void Command::send_control_commands(){
 
 void Command::drone_emergency_reset()
 {
-  at = "AT*REF=";
+  String at = "AT*REF=";
   command = at + getSequenceNumber() + ",290717952\r\n";
   sendwifi(command);
 }
@@ -141,7 +169,7 @@ int Command::moveRotate(float yawInDegrees)
 
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
-  at = "AT*PCMD=";
+  String at = "AT*PCMD=";
   command = at + getSequenceNumber() + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   return command;
 }
@@ -154,14 +182,14 @@ void Command::sendPcmd(String command)
 
 void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
-  at = "AT*PCMD=";
+  String at = "AT*PCMD=";
   command = at + getSequenceNumber() + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sendwifi(command);
 }
 
 String Command::makeAnim(anim_mayday_t anim, int time)
 {
-  at = "AT*ANIM=";
+  String at = "AT*ANIM=";
   command = at + getSequenceNumber() + "," + anim + "," + time + "\r\n";
   return command;
 }
@@ -169,7 +197,7 @@ String Command::makeAnim(anim_mayday_t anim, int time)
 void Command::doLEDAnim(int animseq, int duration)
 {
   PCsrl << "calling LEDAnim" << endl;
-  at = "AT*LED=";
+  String at = "AT*LED=";
   command = at + getSequenceNumber() + "," + animseq + ",1073741824," + duration + "\r\n";
   sendwifi(command);
 }
