@@ -67,12 +67,18 @@ void loop()
     
     com.sendwifi(com.makePcmd(1,0,0,0,0));
     com.sendwifi(com.makePcmd(1,0,0,0,0));
-    delay(2000);
+    delay(10000);
     
+<<<<<<< HEAD
     for (int i =0;i<100;i++) {
       com.moveRotate(360);
       delay(50);
     }
+=======
+    
+    com.moveForward(1);
+    delay(50);
+>>>>>>> 3a670c48e0eb66684a54b68ac9812ec0ca500168
     delay(500);
     
     com.sendRef(LANDING);

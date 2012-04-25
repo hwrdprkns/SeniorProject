@@ -49,20 +49,12 @@ int Command::start_wifi_connection()
   //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
-  
-  //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
   
   // drone's network profile, change if needed
   WIFIsrl.println("AT+WA=ardrone_279440");
   WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
-  
-  // abandon autoconnection mode
-  //WIFIsrl.println("AT+NAUTO=0,0,192.168.1.3,5556");
-  //WIFIsrl.println("AT+NSTAT=?");
-  //WIFIsrl.println("AT+CID=?");
-  //WIFIsrl.print("ATA2\r");
   
   delay(3000); //need 3 seconds for connection to establish
   return 0;
@@ -158,6 +150,7 @@ int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
   String moveForward = makePcmd(1, 0, -.855, 0, 0);
+<<<<<<< HEAD
   #ifndef GAINSPAN
     ARsrl << moveForward;
   #else
@@ -169,17 +162,16 @@ int Command::moveForward(float distanceInMeters)
     delay(200);
     i += 0.2;
   }*/
+=======
+  sendPcmd(moveForward);
+>>>>>>> 3a670c48e0eb66684a54b68ac9812ec0ca500168
   return 1;
 }
 
 int Command::moveRotate(float yawInDegrees)
 {
   int i = 0;
-  //String command = makePcmd(1, 0, 0, 0, 1);
-  //sendPcmd(command);
-  //delay(200);
   while (i < yawInDegrees) {
-    //String stayRotate = makePcmd(1, 0, 0, 0, yawInDegrees/90);
     String stayRotate = makePcmd(1, 0, 0, 0, 0.17);
     #ifndef GAINSPAN
       ARsrl << stayRotate;
@@ -281,7 +273,7 @@ int Command::init_drone()
   PCsrl << "I'm initing\r\n";
   sendConfig("general:navdata_demo","TRUE");
   sendConfig("control:altitude_max","2000");
-  sendConfig("control:euler_angle_max","0.35");
+  sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
   sendConfig("control:outdoor","FALSE");
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
