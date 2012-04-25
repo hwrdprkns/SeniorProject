@@ -15,8 +15,6 @@ Command::Command()
   command = "";
   s2ip_running = 0;
   drone_is_init = 0;
-  drone_is_hover = 0;
-  emergency = 0;
 }
 
 void Command::sendwifi(String s)
@@ -66,7 +64,7 @@ String Command::sendComwdg(int msec)
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
   
-  for (int i = 0; i < msec; i += 20) {
+  for (int i=0; i<msec; i+=20) {
     #ifndef GAINSPAN
       ARsrl << command;
     #else
@@ -150,21 +148,11 @@ int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
   String moveForward = makePcmd(1, 0, -.855, 0, 0);
-<<<<<<< HEAD
   #ifndef GAINSPAN
     ARsrl << moveForward;
   #else
     sendwifi(moveForward);
   #endif
-  /*while (i < distanceInMeters) {
-    String stayForward = makePcmd(1, 0, -.500, 0, 0);
-    sendPcmd(stayForward);
-    delay(200);
-    i += 0.2;
-  }*/
-=======
-  sendPcmd(moveForward);
->>>>>>> 3a670c48e0eb66684a54b68ac9812ec0ca500168
   return 1;
 }
 
@@ -172,11 +160,11 @@ int Command::moveRotate(float yawInDegrees)
 {
   int i = 0;
   while (i < yawInDegrees) {
-    String stayRotate = makePcmd(1, 0, 0, 0, 0.17);
+    String moveRotate = makePcmd(1, 0, 0, 0, 0.17);
     #ifndef GAINSPAN
-      ARsrl << stayRotate;
+      ARsrl << moveRotate;
     #else
-      sendwifi(stayRotate);
+      sendwifi(moveRotate);
     #endif
     delay(150);
     i += 8;
@@ -300,32 +288,6 @@ int Command::drone_hover(int msec)
   return 1;
 }
 
-/*int Command::drone_move_up(int centimeter)
-{
-  int i = 0;
-  while (i < centimeter) {
-    ARsrl << makePcmd(1, 0, 0, 0.6, 0);
-    delay(100);
-    i += 10;
-  }
-  return 1;
-}
-
-int Command::drone_move_down(int centimeter)
-{
-  int i = 0;
-  while (i < centimeter) {
-    #ifndef GAINSPAN
-      ARsrl << makePcmd(1, 0, 0, -0.5, 0);
-    #else
-      sendwifi(makePcmd(1, 0, 0, -0.5, 0));
-    #endif
-    delay(100);
-    i += 10;
-  }
-  return 1;
-}
-*/
 long Command::fl2int(float value)
 {
   resultint.i = 0;

@@ -66,18 +66,12 @@ class Command {
     
     int init_drone();
     
-    int drone_takeoff();
     int drone_hover(int msec);
-    int drone_landing();
-    int drone_move_up(int centimeter);
-    int drone_move_down(int centimeter);
     
     void readARsrl();
     
     int s2ip_running;
-    int drone_is_hover;
     int drone_is_init;
-    int emergency;
     
     // Movement functions
     int moveForward(float distanceInMeters);
