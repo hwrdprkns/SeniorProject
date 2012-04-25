@@ -40,29 +40,6 @@ void loop()
       PCsrl.println("Drone wasn't initlized before loop() was called. Initalizing now.\r\n");
     }
     
-
-    
-    /*
-      delay(30);
-      com.drone_takeoff();
-      delay(100);
-      // delay(3000);
-      com.drone_landing();
-      delay(30);
-      ARsrl << com.makeComwdg();
-      delay(30);
-      ARsrl << com.LEDAnim(2,3);
-      
-      */
-  
-    //PCsrl << "Drone initialization failed, please check connection\r\n";
-    
-    /*  reached 
-    read_rx_buf();
-    delay(40);
-    //delay(1000000);
-    */
-    
   } else {
     
     com.drone_takeoff();
