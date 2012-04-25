@@ -1,5 +1,5 @@
 #include "Command.h"
-//#include "Streaming.h"
+#include "Streaming.h"
 
 int debug = 1;
 extern ring_buffer rx_buf;
@@ -17,9 +17,9 @@ String atcmd = "";
 void setup()
 {
   PCsrl.begin(9600);
-  
-  com.start_wifi_connection();
 
+  com.start_wifi_connection();
+  
   com.drone_is_init = com.init_drone();
   
   Timer1.initialize(COMWDG_INTERVAL_USEC);
@@ -37,7 +37,7 @@ void loop()
   if (com.drone_is_init == 0) {
         if (debug) {
       // never use three ! together in arduino code
-      PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
+      PCsrl.println("Drone wasn't initlized before loop() was called. Initalizing now.\r\n");
     }
     
 
@@ -64,8 +64,6 @@ void loop()
     */
     
   } else {
-     
-    com.doLEDAnim(2,3);
     
     com.drone_takeoff();
     com.drone_takeoff();
@@ -88,6 +86,7 @@ void loop()
     
     //end of program
     Timer1.detachInterrupt();
+    PCsrl.println("Program finished");
     while (1){};
     
   }

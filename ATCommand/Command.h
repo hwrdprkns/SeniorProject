@@ -2,6 +2,7 @@
 #define Command_h
 
 #include "Arduino.h"
+#include <stdlib.h> 
 #include "Streaming.h"
 
 #define ARsrl Serial
@@ -92,6 +93,8 @@ class Command {
     
     // should be obsolete
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+    
+    int getSequenceNumber();
     	
   private:
     String at;

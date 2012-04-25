@@ -22,15 +22,17 @@ Command::Command()
 
 
 void Command::sendwifi(String s) {
+  
     WIFIsrl.write(27); //esc
     WIFIsrl.print("S0"); //choose connection CID 0
     WIFIsrl.print(s);
     WIFIsrl.write(27);
     WIFIsrl.print("E");
     
-    WIFIsrl.println(memoryTest());    
-    ///if(debug) PCsrl << s;
-  
+       
+    if(debug) PCsrl.println(s);
+    
+    WIFIsrl.println(memoryTest()); 
 }
 
 
@@ -59,14 +61,13 @@ int Command::start_wifi_connection()
 String Command::makeComwdg()
 {
   at = "AT*COMWDG=";
-  command = at + sequenceNumber + "\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "\r\n";
   return command;
 }
 
 void Command::sendComwdg_t(int msec)
 {
-  for (int i = 0; i < msec; i += 20) {
+  for (int i = 0; i < msec; i+=20) {
     sendwifi(makeComwdg());
     delay(20);
   }
@@ -75,16 +76,14 @@ void Command::sendComwdg_t(int msec)
 void Command::sendFtrim()
 {
   at = "AT*FTRIM=";
-  command = at + sequenceNumber + "\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "\r\n";
   sendwifi(command);
 }
 
 void Command::sendConfig(String option, String value)
 {
   at = "AT*CONFIG=";
-  command = at + sequenceNumber + ",\"" + option + "\",\"" + value + "\"\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + ",\"" + option + "\",\"" + value + "\"\r\n";
   sendwifi(command);
 }
 
@@ -92,34 +91,29 @@ void Command::sendRef(flying_status fs)
 {
   at = "AT*REF=";
   if(fs == TAKEOFF){
-    command = at + sequenceNumber + ",290718208\r\n"; //takeoff
+    command = at + getSequenceNumber() + ",290718208\r\n"; //takeoff
   }
   else if(fs == LANDING){
-    command = at + sequenceNumber + ",290717696\r\n"; //landing
+    command = at + getSequenceNumber() + ",290717696\r\n"; //landing
   } else if (fs == EMERGENCY_TOGGLE){
-    command = at + sequenceNumber + ",290717952\r\n"; //landing
+    command = at + getSequenceNumber() + ",290717952\r\n"; //landing
   }
    
   // emergency -> 290717952
-  sequenceNumber++;
   sendwifi(command);
 }
 
 void Command::send_control_commands(){
     at = "AT*CTRL=";
-    sendwifi(at+sequenceNumber+",4,0\r\n");
-    sequenceNumber++;
-    sendwifi(at+sequenceNumber+",0,0\r\n");
-    sequenceNumber++;
-    sendwifi(at+sequenceNumber+",4,0\r\n");
-    sequenceNumber++;
+    sendwifi(at+getSequenceNumber()+",4,0\r\n");
+    sendwifi(at+getSequenceNumber()+",0,0\r\n");
+    sendwifi(at+getSequenceNumber()+",4,0\r\n");
 }
 
 void Command::drone_emergency_reset()
 {
   at = "AT*REF=";
-  command = at + sequenceNumber + ",290717952\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + ",290717952\r\n";
   sendwifi(command);
 }
 
@@ -148,8 +142,7 @@ int Command::moveRotate(float yawInDegrees)
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
   at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   return command;
 }
 
@@ -162,16 +155,14 @@ void Command::sendPcmd(String command)
 void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
   at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sendwifi(command);
 }
 
 String Command::makeAnim(anim_mayday_t anim, int time)
 {
   at = "AT*ANIM=";
-  command = at + sequenceNumber + "," + anim + "," + time + "\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "," + anim + "," + time + "\r\n";
   return command;
 }
 
@@ -179,8 +170,7 @@ void Command::doLEDAnim(int animseq, int duration)
 {
   PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
-  command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
-  sequenceNumber++;
+  command = at + getSequenceNumber() + "," + animseq + ",1073741824," + duration + "\r\n";
   sendwifi(command);
 }
 
@@ -236,18 +226,16 @@ void Command::quit_s2ip()
 
 int Command::init_drone()
 {
-  PCsrl << "I'm initing\r\n";
   sendConfig("general:navdata_demo","TRUE");
   sendConfig("control:altitude_max","2000");
   sendConfig("control:euler_angle_max","0.35");
   sendConfig("control:outdoor","FALSE");
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
-  sendComwdg_t(100);
+  sendComwdg_t(90);
   sendFtrim();
-  //drone_emergency_reset(); //clear emergency flag
   
-  PCsrl << "This method returns";
+  drone_emergency_reset(); //clear emergency flag
   
   return 1;
 }
@@ -319,6 +307,8 @@ void Command::readARsrl()
   }
 }
 
+
+//Memory test code from : http://www.faludi.com/2007/04/18/arduino-available-memory-test/
 int Command::memoryTest() {
   int byteCounter = 0; // initialize a counter
   byte *byteArray; // create a pointer to a byte array
@@ -334,6 +324,10 @@ int Command::memoryTest() {
 
   free(byteArray); // also free memory after the function finishes
   return byteCounter; // send back the highest number of bytes successfully allocated
+}
+
+int Command::getSequenceNumber(){
+  return sequenceNumber++;
 }
 
 // Volatile, since it is modified in an ISR.
