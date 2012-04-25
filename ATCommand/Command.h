@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial2
+#define ARsrl Serial
 #define PCsrl Serial
 #define WIFIsrl ARsrl
 
@@ -98,6 +98,7 @@ class Command {
     String command;
     
     long fl2int(float value);
+    int memoryTest();
     
 
 	//new ones

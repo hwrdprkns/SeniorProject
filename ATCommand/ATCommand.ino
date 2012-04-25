@@ -1,5 +1,5 @@
 #include "Command.h"
-#include "Streaming.h"
+//#include "Streaming.h"
 
 int debug = 1;
 extern ring_buffer rx_buf;
@@ -9,7 +9,7 @@ Command com;
 int sequenceNumber = 1;
 String atcmd = "";
 
-#include "TimerThree.h"
+#include "TimerOne.h"
 #define LEDpin 13
 
 
@@ -17,17 +17,13 @@ String atcmd = "";
 void setup()
 {
   PCsrl.begin(9600);
-  if (debug) {
-    // never use three ! together in arduino code
-    PCsrl << "Whatever!\r\n";
-  }
   
   com.start_wifi_connection();
 
-  Timer3.initialize(COMWDG_INTERVAL_USEC);
   com.drone_is_init = com.init_drone();
   
-  Timer3.attachInterrupt(watchdog_timer);
+  Timer1.initialize(COMWDG_INTERVAL_USEC);
+  Timer1.attachInterrupt(watchdog_timer);
   
 }
 
@@ -76,12 +72,13 @@ void loop()
     
     com.sendwifi(com.makePcmd(1,0,0,0,0));
     com.sendwifi(com.makePcmd(1,0,0,0,0));
-    delay(2000);
+    delay(5000);
     
-    for(int i =0;i<100;i++){
-      com.moveRotate(360);
-      delay(50);
-    }
+    com.moveForward(1);
+    com.moveRotate(180);
+    com.moveForward(1);
+    com.moveRotate(180);
+    
     delay(500);
     
     com.drone_landing();
@@ -90,7 +87,7 @@ void loop()
     delay(500);
     
     //end of program
-    Timer3.detachInterrupt();
+    Timer1.detachInterrupt();
     while (1){};
     
   }

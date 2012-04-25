@@ -1,7 +1,6 @@
 
 #ifndef GAINSPAN
 #define GAINSPAN
-#include "Arduino.h"
 #include "Command.h"
 
 extern int sequenceNumber;
@@ -29,7 +28,8 @@ void Command::sendwifi(String s) {
     WIFIsrl.write(27);
     WIFIsrl.print("E");
     
-    if(debug) PCsrl << s;
+    WIFIsrl.println(memoryTest());    
+    ///if(debug) PCsrl << s;
   
 }
 
@@ -38,39 +38,20 @@ void Command::sendwifi(String s) {
 int Command::start_wifi_connection()
 {
   WIFIsrl.begin(9600);
-  
-  
-  
-  //abandoned along with autoconnection mode
-  //WIFIsrl.print("+++");
-  //delay(1250);
-  
-#ifndef GAINSPAN
-	PCsrl << "no gainspan defined" << endl;
-#else
-	PCsrl << "gainspan defined" <<endl;
-#endif
-  
+ 
   WIFIsrl.println("");
   WIFIsrl.println("AT&F");
   //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
   
-  //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
   
   /* drone's network profile, change if needed*/
   WIFIsrl.println("AT+WA=ardrone_279440");
   WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
-  
-  // abandon autoconnection mode
-  //WIFIsrl.println("AT+NAUTO=0,0,192.168.1.3,5556");
-  //WIFIsrl.println("AT+NSTAT=?");
-  //WIFIsrl.println("AT+CID=?");
-  //WIFIsrl.print("ATA2\r");
-  
+
   delay(3000); //need 3 seconds for connection to establish
   return 0;
 }  
@@ -86,11 +67,7 @@ String Command::makeComwdg()
 void Command::sendComwdg_t(int msec)
 {
   for (int i = 0; i < msec; i += 20) {
-#ifndef GAINSPAN
-    ARsrl << makeComwdg();
-#else
-	sendwifi(makeComwdg());
-#endif
+    sendwifi(makeComwdg());
     delay(20);
   }
 }
@@ -100,11 +77,7 @@ void Command::sendFtrim()
   at = "AT*FTRIM=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
-    ARsrl << command;
-#else
-    sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 void Command::sendConfig(String option, String value)
@@ -112,11 +85,7 @@ void Command::sendConfig(String option, String value)
   at = "AT*CONFIG=";
   command = at + sequenceNumber + ",\"" + option + "\",\"" + value + "\"\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
-    ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 void Command::sendRef(flying_status fs)
@@ -133,15 +102,7 @@ void Command::sendRef(flying_status fs)
    
   // emergency -> 290717952
   sequenceNumber++;
-  
-  if (debug) {
-    PCsrl << command << endl;
-  }
-#ifndef GAINSPAN
-    ARsrl << command;
-#else
-    sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 void Command::send_control_commands(){
@@ -159,11 +120,7 @@ void Command::drone_emergency_reset()
   at = "AT*REF=";
   command = at + sequenceNumber + ",290717952\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
-    ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 /** Movement functions **/
@@ -171,24 +128,15 @@ int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
   String moveForward = makePcmd(1, 0, -.855, 0, 0);
+  delay(1000*distanceInMeters);
   sendPcmd(moveForward);
-  /*while (i < distanceInMeters) {
-    String stayForward = makePcmd(1, 0, -.500, 0, 0);
-    sendPcmd(stayForward);
-    delay(200);
-    i += 0.2;
-  }*/
   return 1;
 }
 
 int Command::moveRotate(float yawInDegrees)
 {
   int i = 0;
-  //String command = makePcmd(1, 0, 0, 0, 1);
-  //sendPcmd(command);
-  //delay(200);
   while (i < yawInDegrees) {
-    //String stayRotate = makePcmd(1, 0, 0, 0, yawInDegrees/90);
     String stayRotate = makePcmd(1, 0, 0, 0, 0.17);
     sendPcmd(stayRotate);
     delay(150);
@@ -208,11 +156,7 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
 void Command::sendPcmd(String command)
 {
   previousCommand = command;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw)
@@ -220,11 +164,7 @@ void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw
   at = "AT*PCMD=";
   command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 String Command::makeAnim(anim_mayday_t anim, int time)
@@ -241,11 +181,7 @@ void Command::doLEDAnim(int animseq, int duration)
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  sendwifi(command);
 }
 
 int Command::start_s2ip()
@@ -309,8 +245,9 @@ int Command::init_drone()
   send_control_commands();
   sendComwdg_t(100);
   sendFtrim();
-  delay(50);
-  drone_emergency_reset(); //clear emergency flag
+  //drone_emergency_reset(); //clear emergency flag
+  
+  PCsrl << "This method returns";
   
   return 1;
 }
@@ -319,11 +256,6 @@ int Command::drone_takeoff()
 {
   sendRef(TAKEOFF);
   int i = 0;
-  /*while (i < 50) {
-    ARsrl << makePcmd(1, 0, 0, 0.9, 0);
-    delay(100);
-    i++;
-  }*/
   return 1;
 }
 
@@ -331,11 +263,7 @@ int Command::drone_hover(int msec)
 {
   int i = 0;
   while (i < msec) {
-#ifndef GAINSPAN
-  ARsrl << makePcmd(1, 0, 0, 0, 0);
-#else
-	sendwifi(makePcmd(1, 0, 0, 0, 0));
-#endif
+    sendwifi(makePcmd(1, 0, 0, 0, 0));
     delay(100);
     i += 100;
   }
@@ -345,13 +273,6 @@ int Command::drone_hover(int msec)
 int Command::drone_landing()
 {
   sendRef(LANDING);
-  /*int i = 0;
-  while (i < 50) {
-    // dont change anything here, arduino has a grudge
-    //ARsrl << makePcmd(1, 0, 0, -0.9, 0);
-    delay(100);
-    i++;
-  }*/
   return 1;
 }
 
@@ -359,7 +280,6 @@ int Command::drone_move_up(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
-  
     ARsrl << makePcmd(1, 0, 0, 0.6, 0);
     delay(100);
     i += 10;
@@ -371,11 +291,7 @@ int Command::drone_move_down(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
-#ifndef GAINSPAN
-    ARsrl << makePcmd(1, 0, 0, -0.5, 0);
-#else
-	sendwifi(makePcmd(1, 0, 0, -0.5, 0));
-#endif
+    sendwifi(makePcmd(1, 0, 0, -0.5, 0));
     delay(100);
     i += 10;
   }
@@ -401,6 +317,23 @@ void Command::readARsrl()
       PCsrl.write(ARsrl.read());
     }
   }
+}
+
+int Command::memoryTest() {
+  int byteCounter = 0; // initialize a counter
+  byte *byteArray; // create a pointer to a byte array
+  // More on pointers here: http://en.wikipedia.org/wiki/Pointer#C_pointers
+
+  // use the malloc function to repeatedly attempt
+  // allocating a certain number of bytes to memory
+  // More on malloc here: http://en.wikipedia.org/wiki/Malloc
+  while ( (byteArray = (byte*) malloc (byteCounter * sizeof(byte))) != NULL ) {
+    byteCounter++; // if allocation was successful, then up the count for the next try
+    free(byteArray); // free memory after allocating it
+  }
+
+  free(byteArray); // also free memory after the function finishes
+  return byteCounter; // send back the highest number of bytes successfully allocated
 }
 
 // Volatile, since it is modified in an ISR.
