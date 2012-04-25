@@ -48,9 +48,7 @@ class Command {
     
     int start_wifi_connection();
     
-    //void sendComwdg();
-    String makeComwdg();
-    void sendComwdg_t(int msec);
+    String sendComwdg(int msec);
     void sendFtrim();
     void sendConfig(String option, String value);
     void sendRef(flying_status fs);
@@ -60,9 +58,9 @@ class Command {
     void drone_emergency_reset();
 	
     String makeAnim(anim_mayday_t anim, int time);
-    void doLEDAnim(int animseq, int duration);
+    void LEDAnim(int animseq, int duration);
     
-	/* only used under serial connection, abandoned */
+    // only used under serial connection, abandoned
     int start_s2ip();
     void quit_s2ip();
     
@@ -81,33 +79,21 @@ class Command {
     int drone_is_init;
     int emergency;
     
-    /** Moving functions **/
-    
-    /** When these functions are done (the drone has moved), they will return 1 **/
+    // Movement functions
     int moveForward(float distanceInMeters);
     int moveRotate(float yawInDegrees);
     
-    //can only call after wifi's connection established and CID is given as 0
+    // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
     
-    // should be obsolete
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
-    	
+    
   private:
     String at;
     String command;
     
     long fl2int(float value);
-    
-
-	//new ones
-	void sendPcmd(int enable, float roll, float pitch, float gaz, float yaw);
-    void sendPcmd(String pcmd);
-    
-    String previousCommand;
 };
-
-
 
 struct ring_buffer
 {

@@ -1,4 +1,3 @@
-
 #ifndef GAINSPAN
 #define GAINSPAN
 #include "Arduino.h"
@@ -10,7 +9,6 @@ extern int debug;
 ring_buffer rx_buf= {{0}, 0, 0};
 resultint_ resultint;
 
-
 Command::Command()
 {
   at = "";
@@ -21,35 +19,30 @@ Command::Command()
   emergency = 0;
 }
 
-
-void Command::sendwifi(String s) {
-    WIFIsrl.write(27); //esc
-    WIFIsrl.print("S0"); //choose connection CID 0
-    WIFIsrl.print(s);
-    WIFIsrl.write(27);
-    WIFIsrl.print("E");
-    
-    if(debug) PCsrl << s;
+void Command::sendwifi(String s)
+{
+  WIFIsrl.write(27); //esc
+  WIFIsrl.print("S0"); //choose connection CID 0
+  WIFIsrl.print(s);
+  WIFIsrl.write(27);
+  WIFIsrl.print("E");
   
+  if (debug) PCsrl << s;
 }
-
-
 
 int Command::start_wifi_connection()
 {
   WIFIsrl.begin(9600);
   
-  
-  
-  //abandoned along with autoconnection mode
+  // abandoned along with autoconnection mode
   //WIFIsrl.print("+++");
   //delay(1250);
   
-#ifndef GAINSPAN
-	PCsrl << "no gainspan defined" << endl;
-#else
-	PCsrl << "gainspan defined" <<endl;
-#endif
+  #ifndef GAINSPAN
+    PCsrl << "no gainspan defined" << endl;
+  #else
+    PCsrl << "gainspan defined" << endl;
+  #endif
   
   WIFIsrl.println("");
   WIFIsrl.println("AT&F");
@@ -60,7 +53,7 @@ int Command::start_wifi_connection()
   //WIFIsrl.println("AT+WS");
   WIFIsrl.println("AT+NDHCP=1");
   
-  /* drone's network profile, change if needed*/
+  // drone's network profile, change if needed
   WIFIsrl.println("AT+WA=ardrone_279440");
   WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
@@ -73,26 +66,23 @@ int Command::start_wifi_connection()
   
   delay(3000); //need 3 seconds for connection to establish
   return 0;
-}  
+}
 
-String Command::makeComwdg()
+String Command::sendComwdg(int msec)
 {
   at = "AT*COMWDG=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
-  return command;
-}
-
-void Command::sendComwdg_t(int msec)
-{
+  
   for (int i = 0; i < msec; i += 20) {
-#ifndef GAINSPAN
-    ARsrl << makeComwdg();
-#else
-	sendwifi(makeComwdg());
-#endif
+    #ifndef GAINSPAN
+      ARsrl << command;
+    #else
+      sendwifi(command);
+    #endif
     delay(20);
   }
+  return command;
 }
 
 void Command::sendFtrim()
@@ -100,11 +90,11 @@ void Command::sendFtrim()
   at = "AT*FTRIM=";
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
+  #ifndef GAINSPAN
     ARsrl << command;
-#else
+  #else
     sendwifi(command);
-#endif
+  #endif
 }
 
 void Command::sendConfig(String option, String value)
@@ -112,46 +102,43 @@ void Command::sendConfig(String option, String value)
   at = "AT*CONFIG=";
   command = at + sequenceNumber + ",\"" + option + "\",\"" + value + "\"\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
+  #ifndef GAINSPAN
     ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  #else
+    sendwifi(command);
+  #endif
 }
 
 void Command::sendRef(flying_status fs)
 {
   at = "AT*REF=";
-  if(fs == TAKEOFF){
+  if (fs == TAKEOFF) {
     command = at + sequenceNumber + ",290718208\r\n"; //takeoff
-  }
-  else if(fs == LANDING){
+  } else if (fs == LANDING) {
     command = at + sequenceNumber + ",290717696\r\n"; //landing
-  } else if (fs == EMERGENCY_TOGGLE){
-    command = at + sequenceNumber + ",290717952\r\n"; //landing
+  } else if (fs == EMERGENCY_TOGGLE) {
+    command = at + sequenceNumber + ",290717952\r\n"; //emergency toggle
   }
-   
-  // emergency -> 290717952
   sequenceNumber++;
-  
   if (debug) {
     PCsrl << command << endl;
   }
-#ifndef GAINSPAN
+  #ifndef GAINSPAN
     ARsrl << command;
-#else
+  #else
     sendwifi(command);
-#endif
+  #endif
 }
 
-void Command::send_control_commands(){
-    at = "AT*CTRL=";
-    sendwifi(at+sequenceNumber+",4,0\r\n");
-    sequenceNumber++;
-    sendwifi(at+sequenceNumber+",0,0\r\n");
-    sequenceNumber++;
-    sendwifi(at+sequenceNumber+",4,0\r\n");
-    sequenceNumber++;
+void Command::send_control_commands()
+{
+  at = "AT*CTRL=";
+  sendwifi(at+sequenceNumber+",4,0\r\n");
+  sequenceNumber++;
+  sendwifi(at+sequenceNumber+",0,0\r\n");
+  sequenceNumber++;
+  sendwifi(at+sequenceNumber+",4,0\r\n");
+  sequenceNumber++;
 }
 
 void Command::drone_emergency_reset()
@@ -159,19 +146,23 @@ void Command::drone_emergency_reset()
   at = "AT*REF=";
   command = at + sequenceNumber + ",290717952\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
+  #ifndef GAINSPAN
     ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  #else
+    sendwifi(command);
+  #endif
 }
 
-/** Movement functions **/
+// Movement functions
 int Command::moveForward(float distanceInMeters)
 {
   float i = 0;
   String moveForward = makePcmd(1, 0, -.855, 0, 0);
-  sendPcmd(moveForward);
+  #ifndef GAINSPAN
+    ARsrl << moveForward;
+  #else
+    sendwifi(moveForward);
+  #endif
   /*while (i < distanceInMeters) {
     String stayForward = makePcmd(1, 0, -.500, 0, 0);
     sendPcmd(stayForward);
@@ -190,7 +181,11 @@ int Command::moveRotate(float yawInDegrees)
   while (i < yawInDegrees) {
     //String stayRotate = makePcmd(1, 0, 0, 0, yawInDegrees/90);
     String stayRotate = makePcmd(1, 0, 0, 0, 0.17);
-    sendPcmd(stayRotate);
+    #ifndef GAINSPAN
+      ARsrl << stayRotate;
+    #else
+      sendwifi(stayRotate);
+    #endif
     delay(150);
     i += 8;
   }
@@ -202,29 +197,12 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
   at = "AT*PCMD=";
   command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
+  #ifndef GAINSPAN
+    ARsrl << command;
+  #else
+    sendwifi(command);
+  #endif
   return command;
-}
-
-void Command::sendPcmd(String command)
-{
-  previousCommand = command;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
-}
-
-void Command::sendPcmd(int enable, float roll, float pitch, float gaz, float yaw)
-{
-  at = "AT*PCMD=";
-  command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
-  sequenceNumber++;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
 }
 
 String Command::makeAnim(anim_mayday_t anim, int time)
@@ -235,17 +213,17 @@ String Command::makeAnim(anim_mayday_t anim, int time)
   return command;
 }
 
-void Command::doLEDAnim(int animseq, int duration)
+void Command::LEDAnim(int animseq, int duration)
 {
   PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
-#ifndef GAINSPAN
-  ARsrl << command;
-#else
-	sendwifi(command);
-#endif
+  #ifndef GAINSPAN
+    ARsrl << command;
+  #else
+    sendwifi(command);
+  #endif
 }
 
 int Command::start_s2ip()
@@ -307,7 +285,7 @@ int Command::init_drone()
   sendConfig("control:outdoor","FALSE");
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
-  sendComwdg_t(100);
+  sendComwdg(100);
   sendFtrim();
   delay(50);
   drone_emergency_reset(); //clear emergency flag
@@ -315,51 +293,25 @@ int Command::init_drone()
   return 1;
 }
 
-int Command::drone_takeoff()
-{
-  sendRef(TAKEOFF);
-  int i = 0;
-  /*while (i < 50) {
-    ARsrl << makePcmd(1, 0, 0, 0.9, 0);
-    delay(100);
-    i++;
-  }*/
-  return 1;
-}
-
 int Command::drone_hover(int msec)
 {
   int i = 0;
   while (i < msec) {
-#ifndef GAINSPAN
-  ARsrl << makePcmd(1, 0, 0, 0, 0);
-#else
-	sendwifi(makePcmd(1, 0, 0, 0, 0));
-#endif
+    #ifndef GAINSPAN
+      ARsrl << makePcmd(1, 0, 0, 0, 0);
+    #else
+      sendwifi(makePcmd(1, 0, 0, 0, 0));
+    #endif
     delay(100);
     i += 100;
   }
   return 1;
 }
 
-int Command::drone_landing()
-{
-  sendRef(LANDING);
-  /*int i = 0;
-  while (i < 50) {
-    // dont change anything here, arduino has a grudge
-    //ARsrl << makePcmd(1, 0, 0, -0.9, 0);
-    delay(100);
-    i++;
-  }*/
-  return 1;
-}
-
-int Command::drone_move_up(int centimeter)
+/*int Command::drone_move_up(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
-  
     ARsrl << makePcmd(1, 0, 0, 0.6, 0);
     delay(100);
     i += 10;
@@ -371,17 +323,17 @@ int Command::drone_move_down(int centimeter)
 {
   int i = 0;
   while (i < centimeter) {
-#ifndef GAINSPAN
-    ARsrl << makePcmd(1, 0, 0, -0.5, 0);
-#else
-	sendwifi(makePcmd(1, 0, 0, -0.5, 0));
-#endif
+    #ifndef GAINSPAN
+      ARsrl << makePcmd(1, 0, 0, -0.5, 0);
+    #else
+      sendwifi(makePcmd(1, 0, 0, -0.5, 0));
+    #endif
     delay(100);
     i += 10;
   }
   return 1;
 }
-
+*/
 long Command::fl2int(float value)
 {
   resultint.i = 0;
@@ -403,7 +355,7 @@ void Command::readARsrl()
   }
 }
 
-// Volatile, since it is modified in an ISR.
+// volatile, since it is modified in an ISR.
 volatile boolean inService = false;
 
 void SrlRead()
