@@ -15,7 +15,7 @@ String atcmd = "";
 
 void setup()
 {
-  PCsrl.begin(9600);
+  //PCsrl.begin(9600);
 
   com.start_wifi_connection();
   

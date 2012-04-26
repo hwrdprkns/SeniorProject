@@ -19,11 +19,11 @@ const char ATNCUDP[] PROGMEM = "AT+NCUDP=192.168.1.1,5556";
 
 const char ATCONFIG[] PROGMEM = "AT*CONFIG=";
 const char ATCOMWDG[] PROGMEM = "AT*COMWDG=";
-const char ATPCMD[] PROGMEM = "AT*CTRL="
+const char ATPCMD[] PROGMEM = "AT*CTRL=";
 
 
 
-const char *wirelessTable[] PROGMEM =	   // change "string_table" name to suit
+const char *wirelessTable[] PROGMEM =  // change "string_table" name to suit
 {   
   ATF,
   ATMAC,
