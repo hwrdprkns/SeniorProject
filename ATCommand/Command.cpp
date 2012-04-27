@@ -17,6 +17,9 @@ Command::Command()
   drone_is_init = 0;
 }
 
+/************************************
+* low level routine
+************************************/
 void Command::sendwifi(String s)
 {
   WIFIsrl.write(27); //esc
@@ -28,37 +31,7 @@ void Command::sendwifi(String s)
   if (debug) PCsrl << s;
 }
 
-int Command::start_wifi_connection()
-{
-  WIFIsrl.begin(9600);
-  
-  // abandoned along with autoconnection mode
-  //WIFIsrl.print("+++");
-  //delay(1250);
-  
-  #ifndef GAINSPAN
-    PCsrl << "no gainspan defined" << endl;
-  #else
-    PCsrl << "gainspan defined" << endl;
-  #endif
-  
-  WIFIsrl.println("");
-  WIFIsrl.println("AT&F");
-  //WIFIsrl.println("ATE0"); //turn off echo
-  WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
-  WIFIsrl.println("AT+WM=0");
-  WIFIsrl.println("AT+NDHCP=1");
-  
-  // drone's network profile, change if needed
-  WIFIsrl.println("AT+WA=ardrone_279440");
-  WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
-  readARsrl();
-  
-  delay(3000); //need 3 seconds for connection to establish
-  return 0;
-}
-
-String Command::sendComwdg(int msec)
+void Command::sendComwdg(int msec)
 {
   at = "AT*COMWDG=";
   command = at + sequenceNumber + "\r\n";
@@ -72,7 +45,6 @@ String Command::sendComwdg(int msec)
     #endif
     delay(20);
   }
-  return command;
 }
 
 void Command::sendFtrim()
@@ -131,47 +103,6 @@ void Command::send_control_commands()
   sequenceNumber++;
 }
 
-void Command::drone_emergency_reset()
-{
-  at = "AT*REF=";
-  command = at + sequenceNumber + ",290717952\r\n";
-  sequenceNumber++;
-  #ifndef GAINSPAN
-    ARsrl << command;
-  #else
-    sendwifi(command);
-  #endif
-}
-
-// Movement functions
-int Command::moveForward(float distanceInMeters)
-{
-  float i = 0;
-  String moveForward = makePcmd(1, 0, -.855, 0, 0);
-  #ifndef GAINSPAN
-    ARsrl << moveForward;
-  #else
-    sendwifi(moveForward);
-  #endif
-  return 1;
-}
-
-int Command::moveRotate(float yawInDegrees)
-{
-  int i = 0;
-  while (i < yawInDegrees) {
-    String moveRotate = makePcmd(1, 0, 0, 0, 0.17);
-    #ifndef GAINSPAN
-      ARsrl << moveRotate;
-    #else
-      sendwifi(moveRotate);
-    #endif
-    delay(150);
-    i += 8;
-  }
-  return 1;
-}
-
 String Command::makePcmd(int enable, float roll, float pitch, float gaz, float yaw)
 {
   at = "AT*PCMD=";
@@ -204,6 +135,139 @@ void Command::LEDAnim(int animseq, int duration)
   #else
     sendwifi(command);
   #endif
+}
+
+
+/************************************
+* high level routine
+************************************/
+int Command::start_wifi_connection()
+{
+  WIFIsrl.begin(9600);
+  
+  // abandoned along with autoconnection mode
+  //WIFIsrl.print("+++");
+  //delay(1250);
+  
+  #ifndef GAINSPAN
+    PCsrl << "no gainspan defined" << endl;
+  #else
+    PCsrl << "gainspan defined" << endl;
+  #endif
+  
+  WIFIsrl.println("");
+  WIFIsrl.println("AT&F");
+  //WIFIsrl.println("ATE0"); //turn off echo
+  WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
+  WIFIsrl.println("AT+WM=0");
+  WIFIsrl.println("AT+NDHCP=1");
+  
+  // drone's network profile, change if needed
+  WIFIsrl.println("AT+WA=ardrone_279440");
+  //WIFIsrl.println("AT+WA=ardrone_154516");
+  WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
+  readARsrl();
+  
+  delay(3000); //need 3 seconds for connection to establish
+  return 0;
+}
+
+void Command::drone_emergency_reset()
+{
+	String resetcmd;
+  at = "AT*REF=";
+  command = at + sequenceNumber + ",290717696\r";
+  resetcmd = command;
+  sequenceNumber++;
+  at = "AT*REF=";
+  command = at + sequenceNumber + ",290717952\r";
+  resetcmd = resetcmd+command;
+  sequenceNumber++;
+  /*at = "AT*REF=";
+  command = at + sequenceNumber + ",290717696\r";
+  resetcmd = resetcmd+command;*/
+  #ifndef GAINSPAN
+    ARsrl << resetcmd;
+  #else
+    sendwifi(resetcmd);
+  #endif
+}
+
+// Movement functions
+int Command::moveForward(float distanceInMeters)
+{
+  float i = 0;
+  String moveForward = makePcmd(1, 0, -.5, 0, 0);
+  #ifndef GAINSPAN
+    ARsrl << moveForward;
+  #else
+    sendwifi(moveForward);
+  #endif
+  for ( i = 0; i < distanceInMeters; ) {
+  sendComwdg(40);
+  i = i+0.1;
+  }
+  moveForward = makePcmd(1, 0, 0.4, 0, 0);
+  #ifndef GAINSPAN
+    ARsrl << moveForward;
+  #else
+    sendwifi(moveForward);
+  #endif
+ sendComwdg(80);
+  return 1;
+}
+
+int Command::moveBackward(float distanceInMeters)
+{
+  float i = 0;
+  String moveForward = makePcmd(1, 0, .5, 0, 0);
+  #ifndef GAINSPAN
+    ARsrl << moveForward;
+  #else
+    sendwifi(moveForward);
+  #endif
+  for ( i = 0; i < distanceInMeters; ) {
+  sendComwdg(40);
+  i = i+0.1;
+  }
+  moveForward = makePcmd(1, 0, -0.4, 0, 0);
+  #ifndef GAINSPAN
+    ARsrl << moveForward;
+  #else
+    sendwifi(moveForward);
+  #endif
+   sendComwdg(80);
+  return 1;
+}
+
+int Command::moveRotate(float yawInDegrees)
+{
+  int i = 0;
+  while (i < yawInDegrees) {
+    String moveRotate = makePcmd(1, 0, 0, 0, 0.17);
+    #ifndef GAINSPAN
+      ARsrl << moveRotate;
+    #else
+      sendwifi(moveRotate);
+    #endif
+    delay(150);
+    i += 8;
+  }
+  return 1;
+}
+
+int Command::drone_takeoff() {
+	for (int i = 0; i < 100; i++ ){
+		sendRef(TAKEOFF);
+		delay(30);
+	}
+}
+	
+int Command::drone_landing() {
+	for (int i = 0; i < 60; i++ ){
+		sendRef(LANDING);
+    	delay(30);
+	}
 }
 
 int Command::start_s2ip()
@@ -265,17 +329,18 @@ int Command::init_drone()
   sendConfig("control:outdoor","FALSE");
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
-  sendComwdg(100);
+  //sendComwdg(100);
+  drone_emergency_reset();
   sendFtrim();
   delay(50);
-  drone_emergency_reset(); //clear emergency flag
-  
+  //sendRef(EMERGENCY_TOGGLE);
+
   return 1;
 }
 
 int Command::drone_hover(int msec)
-{
-  int i = 0;
+{/*
+  int i = 0; 
   while (i < msec) {
     #ifndef GAINSPAN
       ARsrl << makePcmd(1, 0, 0, 0, 0);
@@ -284,7 +349,9 @@ int Command::drone_hover(int msec)
     #endif
     delay(100);
     i += 100;
-  }
+  }*/
+  sendwifi(makePcmd(1, 0, 0, 0, 0));
+  sendComwdg(msec);
   return 1;
 }
 
@@ -309,9 +376,8 @@ void Command::readARsrl()
   }
 }
 
-// volatile, since it is modified in an ISR.
-volatile boolean inService = false;
 
+/*
 void SrlRead()
 {
   if (inService) {
@@ -325,7 +391,7 @@ void SrlRead()
     store_char(k, &rx_buf);
   }
   inService = false;
-}
+}*/
 
 void read_rx_buf()
 {

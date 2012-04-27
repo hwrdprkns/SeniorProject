@@ -10,7 +10,7 @@
 
 #define BAUD 115200
 // adjust this base on how often you read your ring buffer
-#define SERIAL_BUFFER_SIZE 1042
+#define SERIAL_BUFFER_SIZE 1
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 #define COMWDG_INTERVAL_USEC 600000
@@ -18,7 +18,7 @@
 typedef enum {
 	TAKEOFF,
 	LANDING,
-        EMERGENCY_TOGGLE
+    EMERGENCY_TOGGLE
 
 } flying_status;
 
@@ -48,7 +48,7 @@ class Command {
     
     int start_wifi_connection();
     
-    String sendComwdg(int msec);
+    void sendComwdg(int msec);
     void sendFtrim();
     void sendConfig(String option, String value);
     void sendRef(flying_status fs);
@@ -67,6 +67,8 @@ class Command {
     int init_drone();
     
     int drone_hover(int msec);
+	int drone_takeoff();
+	int drone_landing();
     
     void readARsrl();
     
@@ -75,6 +77,7 @@ class Command {
     
     // Movement functions
     int moveForward(float distanceInMeters);
+	int moveBackward(float distanceInMeters);
     int moveRotate(float yawInDegrees);
     
     // can only call after wifi's connection established and CID is given as 0

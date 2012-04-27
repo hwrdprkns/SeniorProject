@@ -22,15 +22,10 @@ void setup()
   
   com.start_wifi_connection();
 
-  Timer3.initialize(COMWDG_INTERVAL_USEC);
   com.drone_is_init = com.init_drone();
-  
-  Timer3.attachInterrupt(watchdog_timer);
 }
 
-void watchdog_timer() {
-  com.sendwifi(com.sendComwdg(0));
-}
+
 
 void loop()
 {  
@@ -40,32 +35,34 @@ void loop()
       PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
     }
   } else {
-    com.LEDAnim(2,3);
+    //com.LEDAnim(2,3);
     
-    com.sendRef(TAKEOFF);
-    com.sendRef(TAKEOFF);
+	com.drone_takeoff();
+	//com.sendRef(LANDING);
+    //com.sendRef(TAKEOFF);
     
-    com.sendwifi(com.makePcmd(1,0,0,0,0));
-    com.sendwifi(com.makePcmd(1,0,0,0,0));
-    delay(10000);
-    
+	//com.drone_hover(5000);
+    /*
     for (int i=0; i<100; i++) {
       com.moveRotate(360);
       delay(50);
-    }
-        
+    }*/
+    
+	com.drone_hover(2000);
     com.moveForward(1);
-    delay(50);
+	com.drone_hover(2000);
+	com.moveBackward(1);
+	com.drone_hover(2000);
+    /*delay(50);
     
     delay(500);
-    
-    com.sendRef(LANDING);
-    com.sendRef(LANDING);
-    
+    */
+
+	com.drone_landing();
+
     delay(500);
     
     // end of program
-    Timer3.detachInterrupt();
     while (1) {};
   }
 }
