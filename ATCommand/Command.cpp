@@ -11,19 +11,19 @@ extern int debug;
 ring_buffer rx_buf= {{0}, 0, 0};
 resultint_ resultint;
 
-const char ATF[] PROGMEM = "AT&F";
-const char ATMAC[] PROGMEM = "AT+NMAC=00:1d:c9:10:39:6f\r";
-const char ATWM[] PROGMEM = "AT+WM=0";
-const char ATNDHCP[] PROGMEM = "AT+NDHCP=1";
-const char ATNCUDP[] PROGMEM = "AT+NCUDP=192.168.1.1,5556";
+prog_char  ATF[] PROGMEM = "AT&F";
+prog_char  ATMAC[] PROGMEM = "AT+NMAC=00:1d:c9:10:39:6f\r";
+prog_char  ATWM[] PROGMEM = "AT+WM=0";
+prog_char  ATNDHCP[] PROGMEM = "AT+NDHCP=1";
+prog_char  ATNCUDP[] PROGMEM = "AT+NCUDP=192.168.1.1,5556";
 
-const char ATCONFIG[] PROGMEM = "AT*CONFIG=";
-const char ATCOMWDG[] PROGMEM = "AT*COMWDG=";
-const char ATPCMD[] PROGMEM = "AT*CTRL="
+prog_char  ATCONFIG[] PROGMEM = "AT*CONFIG=";
+prog_char  ATCOMWDG[] PROGMEM = "AT*COMWDG=";
+prog_char  ATPCMD[] PROGMEM = "AT*CTRL=";
 
 
 
-const char *wirelessTable[] PROGMEM =	   // change "string_table" name to suit
+PROGMEM const char *wirelessTable[]  =	   // change "string_table" name to suit
 {   
   ATF,
   ATMAC,
@@ -52,8 +52,7 @@ void Command::sendwifi(String s) {
     
        
     if(debug) PCsrl.println(s);
-    
-    WIFIsrl.println(memoryTest()); 
+
 }
 
 
@@ -336,30 +335,12 @@ void Command::readARsrl()
 }
 
 
-//Memory test code from : http://www.faludi.com/2007/04/18/arduino-available-memory-test/
-int Command::memoryTest() {
-  int byteCounter = 0; // initialize a counter
-  byte *byteArray; // create a pointer to a byte array
-  // More on pointers here: http://en.wikipedia.org/wiki/Pointer#C_pointers
-
-  // use the malloc function to repeatedly attempt
-  // allocating a certain number of bytes to memory
-  // More on malloc here: http://en.wikipedia.org/wiki/Malloc
-  while ( (byteArray = (byte*) malloc (byteCounter * sizeof(byte))) != NULL ) {
-    byteCounter++; // if allocation was successful, then up the count for the next try
-    free(byteArray); // free memory after allocating it
-  }
-
-  free(byteArray); // also free memory after the function finishes
-  return byteCounter; // send back the highest number of bytes successfully allocated
-}
-
 int Command::getSequenceNumber(){
   return sequenceNumber++;
 }
 
 // Volatile, since it is modified in an ISR.
-volatile boolean inService = false;
+/*volatile boolean inService = false;
 
 void SrlRead()
 {
@@ -374,7 +355,7 @@ void SrlRead()
     store_char(k, &rx_buf);
   }
   inService = false;
-}
+}*/
 
 void read_rx_buf()
 {

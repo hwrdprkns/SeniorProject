@@ -12,7 +12,7 @@
 
 #define BAUD 115200
 // adjust this base on how often you read your ring buffer
-#define SERIAL_BUFFER_SIZE 1042
+#define SERIAL_BUFFER_SIZE 1
 // adjust this base on how often you receive message
 #define SERIAL_INTERVAL_USEC 30000
 #define COMWDG_INTERVAL_USEC 600000
@@ -112,7 +112,7 @@ class Command {
     String command;
     
     long fl2int(float value);
-    int memoryTest();
+
     
 
 	//new ones
@@ -121,7 +121,7 @@ class Command {
     
     String previousCommand;
     
-    char buffer[30]; 
+    char buffer[50]; 
 };
 
 

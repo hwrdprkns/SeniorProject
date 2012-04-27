@@ -1,5 +1,6 @@
 #include "Command.h"
 #include "Streaming.h"
+#include "MemoryFree.h"
 
 int debug = 1;
 extern ring_buffer rx_buf;
@@ -22,17 +23,26 @@ void setup()
   com.drone_is_init = com.init_drone();
   
   Timer1.initialize(COMWDG_INTERVAL_USEC);
-  Timer1.attachInterrupt(watchdog_timer);
+  //Timer1.attachInterrupt(watchdog_timer);
   
 }
 
+// Volatile, since it is modified in an ISR.
+volatile boolean inService = false;
 void watchdog_timer() {
+	if (inService) {
+		return;
+	}
+	inService = true;
   com.sendwifi(com.makeComwdg());
+  inService = false;
 }
 
 void loop()
 {  
-	  
+    Serial.print("freeMemory()=");
+    Serial.println(freeMemory());
+    
   if (com.drone_is_init == 0) {
         if (debug) {
       // never use three ! together in arduino code
@@ -64,6 +74,7 @@ void loop()
     Timer1.detachInterrupt();
     PCsrl.println("Program finished");
     while (1){};
+	
     
   }
 }
