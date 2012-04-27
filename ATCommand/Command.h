@@ -78,17 +78,24 @@ class Command {
     // Movement functions
     int moveForward(float distanceInMeters);
 	int moveBackward(float distanceInMeters);
-    int moveRotate(float yawInDegrees);
+	/* degree can be either positive or negative
+	 * positive means rotate clockwise (top view)
+	 */
+    int moveRotate(int yawInDegrees);
+	int moveUp(float distanceInMeters);
+	int moveDown(float distanceInMeters);
+	int moveLeft(float distanceInMeters);
+	int moveRight(float distanceInMeters);
     
     // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
     
-    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
-    
   private:
     String at;
     String command;
-    
+	
+    /* low level routine */
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     long fl2int(float value);
 };
 

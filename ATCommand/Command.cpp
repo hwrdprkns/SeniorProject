@@ -37,13 +37,9 @@ void Command::sendComwdg(int msec)
   command = at + sequenceNumber + "\r\n";
   sequenceNumber++;
   
-  for (int i=0; i<msec; i+=20) {
-    #ifndef GAINSPAN
-      ARsrl << command;
-    #else
+  for (int i=0; i<msec; i+=30) {
       sendwifi(command);
-    #endif
-    delay(20);
+    delay(30);
   }
 }
 
@@ -205,16 +201,17 @@ int Command::moveForward(float distanceInMeters)
     sendwifi(moveForward);
   #endif
   for ( i = 0; i < distanceInMeters; ) {
-  sendComwdg(40);
+  sendComwdg(60);
   i = i+0.1;
   }
+  /*
   moveForward = makePcmd(1, 0, 0.4, 0, 0);
   #ifndef GAINSPAN
     ARsrl << moveForward;
   #else
     sendwifi(moveForward);
   #endif
- sendComwdg(80);
+ sendComwdg(80);*/
   return 1;
 }
 
@@ -228,31 +225,94 @@ int Command::moveBackward(float distanceInMeters)
     sendwifi(moveForward);
   #endif
   for ( i = 0; i < distanceInMeters; ) {
-  sendComwdg(40);
+  sendComwdg(60);
   i = i+0.1;
   }
-  moveForward = makePcmd(1, 0, -0.4, 0, 0);
+  /*moveForward = makePcmd(1, 0, -0.4, 0, 0);
   #ifndef GAINSPAN
     ARsrl << moveForward;
   #else
     sendwifi(moveForward);
   #endif
-   sendComwdg(80);
+   sendComwdg(80);*/
   return 1;
 }
 
-int Command::moveRotate(float yawInDegrees)
+int Command::moveUp(float distanceInMeters)
+{
+  float i = 0;
+  String move;
+  for ( i = 0; i < distanceInMeters; ) {
+  move = makePcmd(1, 0, 0, 0.9, 0);
+  sendwifi(move);
+  sendComwdg(30);
+  delay(80);
+  i = i+0.1;
+  }
+  return 1;
+}
+
+int Command::moveDown(float distanceInMeters)
+{
+  float i = 0;
+  String move;
+  for ( i = 0; i < distanceInMeters; ) {
+  move = makePcmd(1, 0, 0, -0.8, 0);
+  sendwifi(move);
+  delay(70);
+  sendComwdg(30);
+  i = i+0.1;
+  }
+  move = makePcmd(1,0,0,0,0);
+  sendwifi(move);
+  delay(30);
+  return 1;
+}
+
+int Command::moveLeft(float distanceInMeters)
+{
+  float i = 0;
+  String move;
+  move = makePcmd(1, -0.6, 0, 0, 0);
+  sendwifi(move);
+  for ( i = 0; i < distanceInMeters; ) {
+  sendComwdg(30);
+  i = i+0.15;
+  }
+  move = makePcmd(1,0,0,0,0);
+  sendwifi(move);
+  delay(30);
+  return 1;
+}
+
+int Command::moveRight(float distanceInMeters)
+{
+  float i = 0;
+  String move;
+  move = makePcmd(1, 0.6, 0, 0, 0);
+  sendwifi(move);
+  for ( i = 0; i < distanceInMeters; ) {
+  sendComwdg(30);
+  i = i+0.15;
+  }
+  move = makePcmd(1,0,0,0,0);
+  sendwifi(move);
+  delay(30);
+  return 1;
+}
+
+int Command::moveRotate(int yawInDegrees)
 {
   int i = 0;
-  while (i < yawInDegrees) {
-    String moveRotate = makePcmd(1, 0, 0, 0, 0.17);
-    #ifndef GAINSPAN
-      ARsrl << moveRotate;
-    #else
-      sendwifi(moveRotate);
-    #endif
+  int sign;
+  if ( yawInDegrees >= 0 ) sign = 1;
+  else sign = -1;
+  //(sign*yawInDegrees) is always positive
+  while (i < (sign*yawInDegrees) ) {
+    String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
+    sendwifi(moveRotate);
     delay(150);
-    i += 8;
+    i += 16;
   }
   return 1;
 }
@@ -325,13 +385,13 @@ int Command::init_drone()
 {
   PCsrl << "I'm initing\r\n";
   sendConfig("general:navdata_demo","TRUE");
-  sendConfig("control:altitude_max","2000");
+  sendConfig("control:altitude_max","3000");
   sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
-  sendConfig("control:outdoor","FALSE");
+  sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
   //sendComwdg(100);
-  //drone_emergency_toggle();
+  drone_emergency_toggle();
   sendFtrim();
   delay(50);
   //sendRef(EMERGENCY_TOGGLE);
@@ -340,18 +400,8 @@ int Command::init_drone()
 }
 
 int Command::drone_hover(int msec)
-{/*
-  int i = 0; 
-  while (i < msec) {
-    #ifndef GAINSPAN
-      ARsrl << makePcmd(1, 0, 0, 0, 0);
-    #else
-      sendwifi(makePcmd(1, 0, 0, 0, 0));
-    #endif
-    delay(100);
-    i += 100;
-  }*/
-  sendwifi(makePcmd(1, 0, 0, 0, 0));
+{
+  sendwifi(makePcmd(0, 0, 0, 0, 0));
   sendComwdg(msec);
   return 1;
 }

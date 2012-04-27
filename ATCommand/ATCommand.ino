@@ -49,10 +49,14 @@ void loop()
     }*/
     
 	com.drone_hover(2000);
-    com.moveForward(1);
+	com.moveLeft(1);
 	com.drone_hover(2000);
-	com.moveBackward(1);
+	com.LEDAnim(2,3);
+	com.moveRight(1);
 	com.drone_hover(2000);
+	//com.moveDown(1);
+	/*com.moveBackward(1);
+	com.drone_hover(2000);*/
     /*delay(50);
     
     delay(500);
