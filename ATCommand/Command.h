@@ -47,6 +47,7 @@ class Command {
     Command();
     
     int start_wifi_connection();
+	int start_nav_recv();
     
     void sendComwdg(int msec);
     void sendFtrim();
@@ -97,6 +98,7 @@ class Command {
     /* low level routine */
     String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
     long fl2int(float value);
+	void nav_begin();
 };
 
 struct ring_buffer

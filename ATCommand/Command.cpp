@@ -31,6 +31,16 @@ void Command::sendwifi(String s)
   if (debug) PCsrl << s;
 }
 
+void Command::nav_begin()
+{
+  WIFIsrl.write(27); //esc
+  WIFIsrl.print("S1"); //choose connection CID 1
+  WIFIsrl.print("nav\r"); //any packet should work
+  WIFIsrl.write(27);
+  WIFIsrl.print("E");
+
+}
+
 void Command::sendComwdg(int msec)
 {
   at = "AT*COMWDG=";
@@ -81,11 +91,7 @@ void Command::sendRef(flying_status fs)
   if (debug) {
     PCsrl << command << endl;
   }
-  #ifndef GAINSPAN
-    ARsrl << command;
-  #else
     sendwifi(command);
-  #endif
 }
 
 void Command::send_control_commands()
@@ -104,11 +110,7 @@ String Command::makePcmd(int enable, float roll, float pitch, float gaz, float y
   at = "AT*PCMD=";
   command = at + sequenceNumber + "," + enable + "," + fl2int(roll) + "," + fl2int(pitch) + "," + fl2int(gaz) + "," + fl2int(yaw) + "\r";
   sequenceNumber++;
-  #ifndef GAINSPAN
-    ARsrl << command;
-  #else
     sendwifi(command);
-  #endif
   return command;
 }
 
@@ -122,15 +124,11 @@ String Command::makeAnim(anim_mayday_t anim, int time)
 
 void Command::LEDAnim(int animseq, int duration)
 {
-  PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
-  #ifndef GAINSPAN
-    ARsrl << command;
-  #else
     sendwifi(command);
-  #endif
+
 }
 
 
@@ -141,18 +139,9 @@ int Command::start_wifi_connection()
 {
   WIFIsrl.begin(9600);
   
-  // abandoned along with autoconnection mode
-  //WIFIsrl.print("+++");
-  //delay(1250);
-  
-  #ifndef GAINSPAN
-    PCsrl << "no gainspan defined" << endl;
-  #else
-    PCsrl << "gainspan defined" << endl;
-  #endif
-  
   WIFIsrl.println("");
   WIFIsrl.println("AT&F");
+  WIFIsrl.println("AT+NCLOSEALL");
   //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
@@ -166,6 +155,11 @@ int Command::start_wifi_connection()
   
   delay(3000); //need 3 seconds for connection to establish
   return 0;
+}
+
+int Command::start_nav_recv() {
+	WIFIsrl.println("AT+NCUDP=192.168.1.1,5554");
+	return 1;
 }
 
 //NOTES: this toggles the emergency flag. 
