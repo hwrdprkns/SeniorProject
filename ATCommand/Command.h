@@ -55,7 +55,7 @@ class Command {
     void send_control_commands();
 	  
     // clear emergency flag 
-    void drone_emergency_reset();
+    void drone_emergency_toggle();
 	
     String makeAnim(anim_mayday_t anim, int time);
     void LEDAnim(int animseq, int duration);

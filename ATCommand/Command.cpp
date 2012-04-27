@@ -172,7 +172,8 @@ int Command::start_wifi_connection()
   return 0;
 }
 
-void Command::drone_emergency_reset()
+//NOTES: this toggles the emergency flag. 
+void Command::drone_emergency_toggle()
 {
 	String resetcmd;
   at = "AT*REF=";
@@ -330,7 +331,7 @@ int Command::init_drone()
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
   //sendComwdg(100);
-  drone_emergency_reset();
+  //drone_emergency_toggle();
   sendFtrim();
   delay(50);
   //sendRef(EMERGENCY_TOGGLE);
