@@ -3,32 +3,44 @@
 #include <math.h>
 #include <SoftwareSerial.h>
 #include "Streaming.h"
+#include "Command.h"
 
-/**
- * This is the sketch for the following functions:
- * 
- * SantiyCheck
- * calculateWaypoints
- **/
+#define GPSsrl Serial
 
 float LATITUDES[] = {42.408275,42.408024};
 float LONGITUDES[] = { -71.115926, -71.116168};
 int NUMBER_OF_WAYPOINTS = 2;
 
 TinyGPS gps;
+Command com;
 
 float currentDistance;
 float lastLatitude;
 float lastLongitude;
 unsigned long lastAge;
 
+/**** For the command library ****/
+int debug = 1;
+extern ring_buffer rx_buf;
+extern resultint_ resultint;
+int sequenceNumber = 1;
+String atcmd = "";
+
 void setup()
 {
-  Serial.begin(57600); // Baud rate of our GPS
+  GPSsrl.begin(57600); // Baud rate of our GPS
+  
+  com.start_wifi_connection();
+  com.drone_is_init = com.init_drone();
+  
 }
 
 void loop()
 {
+  if (com.drone_is_init == 0 && debug == true) {
+      PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
+   }
+  
   checkSanity();
   
   double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
@@ -64,15 +76,29 @@ void navigatePath(int state, double previousDistance){
 
 int fly_to(float startLat,float startLong,float endLat,float endLon){
 	
-	float bearing = (float) WayPoint::computeInitialBearing(startLat,startLong,endLat,endLon);
+	float bearing = getCourse(startLat,startLong,endLat,endLon);
 	
-	//TODO: Send bearing command to Drone
+	PCsrl.print("Calculated bearing:");PCsrl.println(bearing);
 	
-	float distance = (float) WayPoint::computeDistance(startLat,startLong,endLat,endLon);
+	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
 	currentDistance = distance;
+
+        PCsrl.print("Calculated distance:");PCsrl.println(distance);
 	
-	//TODO: Send distance command to Drone. 
+	com.moveForward(distance);
 }
+
+float getCourse(float startLat,float startLong,float endLat,float endLon){
+  // First get the course that we need to be. 
+  
+  float courseOnCourse = TinyGPS::course_to(startLat,startLong,endLat,endLon);
+  float myCourse = gps.f_course();
+  
+  return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360);
+  
+  
+}
+  
 
 float getCurrent(int param){
 	
@@ -112,7 +138,7 @@ void emergencySituation(int emergency){
 
 void doShutdown(){
   
-  //Send shutdown command to Drone. 
+  com.drone_landing();
 	
 } 
   
@@ -121,12 +147,6 @@ boolean checkSanity(){
   double distanceSanity = WayPoint::computeDistance(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
   double bearingSanity = WayPoint::computeInitialBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
   double finalSanity = WayPoint::computeFinalBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
-
-  //WayPoint::printDouble(distanceSanity,5);
-  //WayPoint::printDouble(bearingSanity,5);
-  //WayPoint::printDouble(finalSanity,5);
-
-  //boolean droneSanity = checkDroneSanity();
 
   boolean isSaneDistance = distanceSanity < 1000;
 
