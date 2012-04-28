@@ -35,7 +35,8 @@ void Command::nav_begin()
 {
   WIFIsrl.write(27); //esc
   WIFIsrl.print("S1"); //choose connection CID 1
-  WIFIsrl.print("nav\r"); //any packet should work
+  long c = 1;
+  WIFIsrl.write(c); //any packet should work
   WIFIsrl.write(27);
   WIFIsrl.print("E");
   
@@ -132,7 +133,6 @@ String Command::makeAnim(anim_mayday_t anim, int time)
 
 void Command::LEDAnim(int animseq, int duration)
 {
-  PCsrl << "calling LEDAnim" << endl;
   at = "AT*LED=";
   command = at + sequenceNumber + "," + animseq + ",1073741824," + duration + "\r\n";
   sequenceNumber++;
@@ -163,7 +163,7 @@ int Command::start_wifi_connection()
   WIFIsrl.println("AT+WA=ardrone_279440");
   readARsrl();
   //WIFIsrl.println("AT+WA=ardrone_154516");
-  WIFIsrl.println("AT+NCUDP=192.168.1.2,5556");
+  WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
   
   delay(3000); //need 3 seconds for connection to establish
@@ -171,7 +171,9 @@ int Command::start_wifi_connection()
 }
 
 int Command::start_nav_recv() {
-	WIFIsrl.println("AT+NCUDP=192.168.1.2,5554");
+	WIFIsrl.println("AT+NCUDP=192.168.1.1,5554");
+	delay(30);
+	nav_begin();
 	return 1;
 }
 
