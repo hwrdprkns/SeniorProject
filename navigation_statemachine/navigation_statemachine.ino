@@ -6,8 +6,11 @@
 
 #define GPSss Serial3
 
-float LATITUDES[] = {42.408275,42.408024};
-float LONGITUDES[] = { -71.115926, -71.116168};
+float LATITUDES[] = {42.40859985,42.40861892};
+float LONGITUDES[] = { -71.11579895, -71.11585235};
+
+
+
 int NUMBER_OF_WAYPOINTS = 2;
 
 TinyGPS gps;
@@ -17,6 +20,7 @@ float currentDistance;
 float lastLatitude;
 float lastLongitude;
 unsigned long lastAge;
+int locationStep;
 
 int state;
 
@@ -25,10 +29,6 @@ struct Location {
   float longitude;
   unsigned long age;
 } currentLocation;
-
-
-
-
 
 /**** For the command library ****/
 int debug = 1;
@@ -39,8 +39,10 @@ String atcmd = "";
 void setup()
 {
   GPSss.begin(57600); // Baud rate of our GPS
+  PCsrl.begin(9600);
   
   state = 0; //default state
+  locationStep = 0;
 }
 
 void loop()
@@ -49,8 +51,8 @@ void loop()
   switch (state) {
 	// sanity check
 	case 0:
-		checkSanity();
-		state = 5;
+                while(!readGPSData() && !checkSanity()){delay(500);}
+		state = 1;
 		break;
   
 	// initialization connection
@@ -79,13 +81,8 @@ void loop()
 	// flying state
 	case 5:
         {
-          getCurrent();
-	double distance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
-        int timeSinceLastEncode = 0;
-				
-	   	if(readGPSData() && continueIfProperAge())navigatePath(0,distance);
-		 
-		break;
+	if(readGPSData() && continueIfProperAge())navigatePath();	 
+	break;
         }
 		
 //	//stop running
@@ -100,8 +97,13 @@ boolean readGPSData(){
 	while(GPSss.available()){
 		int c = GPSss.read();
 		fullSentence = gps.encode(c);
-		if (fullSentence == true) return true;
+		if (fullSentence == true) {
+                  getCurrent();
+                  return true;
+                }
 	}
+
+        PCsrl << "readGPSData retuned false" << endl;
 	return false;
 }
 
@@ -121,26 +123,42 @@ boolean continueIfProperAge(){
 	}
 	
 	lastAge = getAge();
-	
+	PCsrl << "Did not return a proper age." << endl;
 	return false;
 }
 
 
-
-void navigatePath(int state, double previousDistance){
+void navigatePath(){
   
-  float destinationLat = LATITUDES[state];
-  float destinationLong = LONGITUDES[state];
- 
-   getCurrent();
+	float destinationLat; //= LATITUDES[locationStep];
+	float destinationLong; //= LONGITUDES[locationStep];
+  
+	double currentDistance; //= WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
+   /*
+  if(abs(currentDistance) < 10){state = 3; return; }
   
   int flightStatus = fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
+   
+  currentDistance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
   
-  if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
-    
-  if(currentDistance < 10){doShutdown(); return;}
-    
-  navigatePath(state + 1, currentDistance);
+  if(!(currentDistance < previousDistance)){state =4; return;}//Need to handle if we get no closer.
+*/
+	//ed's solution
+	for (int i = 0; i < NUMBER_OF_WAYPOINTS; i++ ) {
+		bool done = false;
+		destinationLat = LATITUDES[i];
+		destinationLong = LONGITUDES[i];
+
+	while(!done)
+	{
+		if(readGPSData() && continueIfProperAge()) {
+			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
+		}
+		currentDistance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
+		if(abs(currentDistance) < 6) done = true;
+	}
+	}
+	state = 3;
  
 }
 
@@ -148,14 +166,17 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	
 	float bearing = getCourse(startLat,startLong,endLat,endLon);
 	
-	PCsrl.print("Calculated bearing:");PCsrl.println(bearing);
+	//PCsrl.print("Calculated bearing:");PCsrl.println(bearing);
 	
 	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
 	currentDistance = distance;
 
-        PCsrl.print("Calculated distance:");PCsrl.println(distance);
-	
-	com.moveForward(distance);
+        //PCsrl.print("Calculated distance:");PCsrl.println(distance);
+        
+	com.moveRotate(ceil(bearing));
+	com.moveForward(ceil(distance/5));
+        com.drone_hover(2500);
+        
 }
 
 float getCourse(float startLat,float startLong,float endLat,float endLon){
