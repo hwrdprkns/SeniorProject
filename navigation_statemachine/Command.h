@@ -18,8 +18,7 @@
 typedef enum {
 	TAKEOFF,
 	LANDING,
-    EMERGENCY_TOGGLE
-
+	EMERGENCY_TOGGLE
 } flying_status;
 
 typedef enum {
@@ -46,29 +45,30 @@ class Command {
   public:
     Command();
     
-    int start_wifi_connection();
+    int start_wifi_connection(); //connect to the drone using wifi, set up connection protocols
     
-    void sendComwdg(int msec);
-    void sendFtrim();
-    void sendConfig(String option, String value);
-    void sendRef(flying_status fs);
-    void send_control_commands();
+    void sendComwdg(int msec); //send reset communication watchdog command repeatedly for a few secs
+    void sendFtrim(); //send flat trim and tell the drone it's lying flat
+    void sendConfig(String option, String value); //send configuration options
+    void sendRef(flying_status fs); //send basic behavior commands (takeoff, landing etc.)
+    void send_control_commands(); //send drone control mode commands
 	  
     // clear emergency flag 
     void drone_emergency_toggle();
-	
-    String makeAnim(anim_mayday_t anim, int time);
-    void LEDAnim(int animseq, int duration);
+    
+    String makeAnim(anim_mayday_t anim, int time); //send basic preset drone animation commands, not used
+    void LEDAnim(int animseq, int duration); //send LED animation command
     
     // only used under serial connection, abandoned
     int start_s2ip();
     void quit_s2ip();
     
+    // initialize the drone after the wifi connection is established, setup flight configuration
     int init_drone();
     
-    int drone_hover(int msec);
-	int drone_takeoff();
-	int drone_landing();
+    int drone_hover(int msec); //make the drone hover for a set no. of secs
+    int drone_takeoff(); //send takeoff command
+    int drone_landing(); //send landing command
     
     void readARsrl();
     
@@ -77,15 +77,12 @@ class Command {
     
     // Movement functions
     int moveForward(float distanceInMeters);
-	int moveBackward(float distanceInMeters);
-	/* degree can be either positive or negative
-	 * positive means rotate clockwise (top view)
-	 */
-    int moveRotate(int yawInDegrees);
-	int moveUp(float distanceInMeters);
-	int moveDown(float distanceInMeters);
-	int moveLeft(float distanceInMeters);
-	int moveRight(float distanceInMeters);
+    int moveBackward(float distanceInMeters);
+    int moveUp(float distanceInMeters);
+    int moveDown(float distanceInMeters);
+    int moveLeft(float distanceInMeters);
+    int moveRight(float distanceInMeters);
+    int moveRotate(int yawInDegrees); //degrees can be either positive (clockwise from top view) or negative
     
     // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
@@ -94,9 +91,9 @@ class Command {
     String at;
     String command;
 	
-    /* low level routine */
-    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
-    long fl2int(float value);
+    // low level routine
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw); //send progressive commands that make the drone move (translate/rotate)
+    long fl2int(float value); //convert float values into 32-bit integer values
 };
 
 struct ring_buffer
@@ -106,6 +103,7 @@ struct ring_buffer
   volatile int tail;
 };
 
+// utilized by fl2int()
 union resultint_
 {
   long i;
