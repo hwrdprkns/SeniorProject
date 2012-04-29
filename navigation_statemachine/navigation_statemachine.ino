@@ -18,6 +18,8 @@ float lastLatitude;
 float lastLongitude;
 unsigned long lastAge;
 
+int state;
+
 /**** For the command library ****/
 int debug = 1;
 extern ring_buffer rx_buf;
@@ -28,13 +30,11 @@ void setup()
 {
   GPSsrl.begin(57600); // Baud rate of our GPS
   
-  com.start_wifi_connection();
-  com.drone_is_init = com.init_drone();
-  
+  state = 0; //default state
 }
 
 void loop()
-{
+{/*
   if (com.drone_is_init == 0 && debug == true) {
       //not reached
       PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
@@ -45,8 +45,53 @@ void loop()
   
   double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
   navigatePath(0,distance);
-  while(1) {};
+  while(1) {};*/
+  
+  switch (state) {
+	// sanity check
+	case 0:
+		checkSanity();
+		state = 1;
+		break;
+  
+	// initialization connection
+	case 1:
+		com.start_wifi_connection();
+		com.drone_is_init = com.init_drone();
+		state = 2;
+		break;
+	
+	// takeoff state
+	case 2:
+		com.drone_takeoff();
+		state = 5;
+		break;
+		
+	// landing
+	case 3:
+		doShutdown();
+		break;
+		
+	// emergency toggle
+	case 4:
+		com.drone_emergency_toggle();
+		break;
+		
+	// flying state
+	case 5:
+		double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
+		navigatePath(0,distance);
+		break;
+		
+//	//stop running
+	default:
+		stop2()
+                break;
+  }
 } 
+
+void stop2(){while(1){}}
+
 
 void navigatePath(int state, double previousDistance){
   
