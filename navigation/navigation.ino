@@ -6,6 +6,8 @@
 
 #define GPSsrl Serial3
 
+SoftwareSerial(2,3) GPSss;
+
 float LATITUDES[] = {42.408275,42.408024};
 float LONGITUDES[] = { -71.115926, -71.116168};
 int NUMBER_OF_WAYPOINTS = 2;
@@ -40,15 +42,27 @@ void loop()
       PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
       while(1) {};
    }
-  
-  checkSanity();
-  
-  double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
-  navigatePath(0,distance);
+
+  double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]); 
+ 
+ checkSanity();	
+
+ int timeSinceLastEncode = 0;
+
+	while(GPSss.available()){
+		int c = GPSss.read();
+		if(gps.encode(c)){
+			timeSinceLastEncode = 0;
+			navigatePath(0,distance);
+		} else {
+			timeSinceLastEncode++;
+		}
+	}
   while(1) {};
 } 
 
 void navigatePath(int state, double previousDistance){
+	
   
   float destinationLat = LATITUDES[state];
   float destinationLong = LONGITUDES[state];
@@ -96,8 +110,6 @@ float getCourse(float startLat,float startLong,float endLat,float endLon){
   float myCourse = gps.f_course();
   
   return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360);
-  
-  
 }
   
 

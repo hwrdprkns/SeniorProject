@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial
+#define ARsrl Serial2
 #define PCsrl Serial
 #define WIFIsrl ARsrl
 

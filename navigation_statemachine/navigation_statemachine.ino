@@ -34,24 +34,13 @@ void setup()
 }
 
 void loop()
-{/*
-  if (com.drone_is_init == 0 && debug == true) {
-      //not reached
-      PCsrl << "Drone wasn't initlized before loop() was called. Initalizing now.\r\n";
-      while(1) {};
-   }
-  
-  checkSanity();
-  
-  double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
-  navigatePath(0,distance);
-  while(1) {};*/
+{
   
   switch (state) {
 	// sanity check
 	case 0:
 		checkSanity();
-		state = 1;
+		state = 5;
 		break;
   
 	// initialization connection
@@ -78,10 +67,15 @@ void loop()
 		break;
 		
 	// flying state
-	case 5:{
+	case 5:
+        {
 		double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
-		navigatePath(0,distance);
-		break;}
+        int timeSinceLastEncode = 0;
+				
+	   	if(readGPSData() && continueIfProperAge())navigatePath(0,distance);
+		 
+		break;
+        }
 		
 //	//stop running
 	default:
@@ -90,6 +84,37 @@ void loop()
   }
 } 
 
+boolean readGPSData(){
+	boolean fullSentence = false;
+	while(GPSss.available()){
+		int c = GPSss.read();
+		fullSentence = gps.encode(c);
+		if (fullSentence == true) return true;
+	}
+	return false;
+}
+
+long lastAge = 0;
+/* This will return false if the age is invalid or too long. */
+boolean continueIfProperAge(){
+	
+	if(lastAge == getAge()){
+		int iter = 0;
+		for(int iter = 0;iter<100;iter++){
+			delay(5);
+			readGPSData();
+			if(lastAge != getAge()){
+				lastAge = getAge();
+				return true;
+			}
+		}
+	}
+	
+	lastAge = getAge();
+	
+	return false;
+}
+
 
 
 void navigatePath(int state, double previousDistance){
@@ -97,20 +122,13 @@ void navigatePath(int state, double previousDistance){
   float destinationLat = LATITUDES[state];
   float destinationLong = LONGITUDES[state];
   
-  float currentLatitude = getCurrent(1);
-  float currentLongitude = getCurrent(0);
+  float[] currentLocation = getCurrent();
   
-  int flightStatus = fly_to(currentLatitude,currentLongitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
+  int flightStatus = fly_to(currentLocation[0],currentLocation[1],destinationLat,destinationLong); //Maybe return some kind of flight status here?
   
   if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
   
-  if(lastAge == getAge()){
-    int i =0;
-    while(lastAge == getAge()){
-      i++;
-      if(i > 100){doShutdown();return;}
-      //TODO Make Drone hover where it is. 
-    }
+  
   }
     
   if(currentDistance < 10){doShutdown(); return;}
@@ -139,13 +157,11 @@ float getCourse(float startLat,float startLong,float endLat,float endLon){
   float courseOnCourse = TinyGPS::course_to(startLat,startLong,endLat,endLon);
   float myCourse = gps.f_course();
   
-  return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360);
-  
-  
+  return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360); 
 }
   
 
-float getCurrent(int param){
+float[] getCurrent(int param){
 	
 	float latitude,longitude;
 	unsigned long age;
@@ -156,9 +172,7 @@ float getCurrent(int param){
        lastLongitude = longitude;
        lastAge = age;
 	
-	if(param == 1) return latitude;
-	
-	return longitude;
+	return {latitude,longitude};
 }
 
 unsigned long getAge(){
@@ -183,8 +197,7 @@ void emergencySituation(int emergency){
 
 void doShutdown(){
   
-  com.drone_landing();
-	
+  com.drone_landing();	
 } 
   
 boolean checkSanity(){
