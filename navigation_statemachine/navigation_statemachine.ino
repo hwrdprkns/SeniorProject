@@ -78,19 +78,18 @@ void loop()
 		break;
 		
 	// flying state
-	case 5:
+	case 5:{
 		double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
 		navigatePath(0,distance);
-		break;
+		break;}
 		
 //	//stop running
 	default:
-		stop2()
+		while (1) {}
                 break;
   }
 } 
 
-void stop2(){while(1){}}
 
 
 void navigatePath(int state, double previousDistance){
