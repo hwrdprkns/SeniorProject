@@ -1,10 +1,10 @@
 #include "WayPoint.h"
 #include "TinyGps.h"
-#include <math.h>
-#include "Streaming.h"
+//#include "Streaming.h"
 #include "Command.h"
+#include <math.h>
 
-#define GPSsrl Serial3
+#define GPSss Serial3
 
 float LATITUDES[] = {42.408275,42.408024};
 float LONGITUDES[] = { -71.115926, -71.116168};
@@ -20,6 +20,16 @@ unsigned long lastAge;
 
 int state;
 
+struct Location {
+  float latitude;
+  float longitude;
+  unsigned long age;
+} currentLocation;
+
+
+
+
+
 /**** For the command library ****/
 int debug = 1;
 extern ring_buffer rx_buf;
@@ -28,7 +38,7 @@ String atcmd = "";
 
 void setup()
 {
-  GPSsrl.begin(57600); // Baud rate of our GPS
+  GPSss.begin(57600); // Baud rate of our GPS
   
   state = 0; //default state
 }
@@ -69,7 +79,8 @@ void loop()
 	// flying state
 	case 5:
         {
-		double distance = WayPoint::computeDistance(getCurrent(1),getCurrent(0),LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
+          getCurrent();
+	double distance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);  
         int timeSinceLastEncode = 0;
 				
 	   	if(readGPSData() && continueIfProperAge())navigatePath(0,distance);
@@ -94,7 +105,6 @@ boolean readGPSData(){
 	return false;
 }
 
-long lastAge = 0;
 /* This will return false if the age is invalid or too long. */
 boolean continueIfProperAge(){
 	
@@ -121,15 +131,12 @@ void navigatePath(int state, double previousDistance){
   
   float destinationLat = LATITUDES[state];
   float destinationLong = LONGITUDES[state];
+ 
+   getCurrent();
   
-  float[] currentLocation = getCurrent();
-  
-  int flightStatus = fly_to(currentLocation[0],currentLocation[1],destinationLat,destinationLong); //Maybe return some kind of flight status here?
+  int flightStatus = fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
   
   if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
-  
-  
-  }
     
   if(currentDistance < 10){doShutdown(); return;}
     
@@ -159,32 +166,17 @@ float getCourse(float startLat,float startLong,float endLat,float endLon){
   
   return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360); 
 }
-  
 
-float[] getCurrent(int param){
-	
-	float latitude,longitude;
-	unsigned long age;
-	
-	gps.f_get_position(&latitude,&longitude,&age);
-
-       lastLatitude = latitude;
-       lastLongitude = longitude;
-       lastAge = age;
-	
-	return {latitude,longitude};
+void getCurrent(){
+      gps.f_get_position(&currentLocation.latitude,&currentLocation.longitude,&currentLocation.age);
 }
 
 unsigned long getAge(){
-  float latitude,longitude;
-  unsigned long age;
-  gps.f_get_position(&latitude,&longitude,&age);
+   gps.f_get_position(&currentLocation.latitude,&currentLocation.longitude,&currentLocation.age);
+
   
-  lastLatitude = latitude;
-  lastLongitude = longitude;
-  lastAge = age;
   
-  return age;
+  return currentLocation.age;
 }
 
 void emergencySituation(int emergency){

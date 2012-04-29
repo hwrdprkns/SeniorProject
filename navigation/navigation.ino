@@ -75,7 +75,7 @@ void navigatePath(int state, double previousDistance){
   if(!(currentDistance < previousDistance)) emergencySituation(-1);//Need to handle if we get no closer.
   
   if(lastAge == getAge()){
-    int i =0;
+    int i = 0;
     while(lastAge == getAge()){
       i++;
       if(i > 100){doShutdown();return;}
