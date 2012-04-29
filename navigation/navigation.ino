@@ -23,7 +23,6 @@ unsigned long lastAge;
 int debug = 1;
 extern ring_buffer rx_buf;
 extern resultint_ resultint;
-int sequenceNumber = 1;
 String atcmd = "";
 
 void setup()

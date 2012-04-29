@@ -6,7 +6,6 @@ extern ring_buffer rx_buf;
 extern resultint_ resultint;
 
 Command com;
-int sequenceNumber = 1;
 String atcmd = "";
 
 #include "TimerThree.h"

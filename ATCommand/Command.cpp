@@ -3,7 +3,7 @@
 #include "Arduino.h"
 #include "Command.h"
 
-extern int sequenceNumber;
+int sequenceNumber = 1;
 extern int debug;
 
 ring_buffer rx_buf= {{0}, 0, 0};
