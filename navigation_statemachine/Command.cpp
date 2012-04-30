@@ -31,15 +31,14 @@ void Command::sendwifi(String s)
   if (debug) PCsrl << s;
 }
 
-
 void Command::sendComwdg(int msec)
 {
   at = "AT*COMWDG=";
-  command = at + sequenceNumber + "\r\n";
-  sequenceNumber++;
   
   for (int i=0; i<msec; i+=30) {
-      sendwifi(command);
+    command = at + sequenceNumber + "\r\n";
+	sequenceNumber++;
+    sendwifi(command);
     delay(30);
   }
 }
@@ -132,19 +131,33 @@ int Command::start_wifi_connection()
   
   WIFIsrl.println("");
   WIFIsrl.println("AT&F");
+  WIFIsrl.println("ATE1"); //turn on echo
   WIFIsrl.println("AT+NCLOSEALL");
-  //WIFIsrl.println("ATE0"); //turn off echo
   WIFIsrl.print("AT+NMAC=00:1d:c9:10:39:6f\r"); //set MAC address
   WIFIsrl.println("AT+WM=0");
   WIFIsrl.println("AT+NDHCP=1");
   
+   char c1, c2;
   // drone's network profile, change if needed
-  WIFIsrl.println("AT+WA=ardrone_279440");
-  //WIFIsrl.println("AT+WA=ardrone_154516");
+  readARsrl();
+  bool done = false;
+  while ( !done) {
+	while( WIFIsrl.available() ) {
+		c1 = WIFIsrl.read();
+		if ( c1 == 'I' ) {
+			c2 = WIFIsrl. read();
+			if ( c2 == 'P' )  {done = true; break;}
+		}
+	}
+  	WIFIsrl.println("AT+WA=ardrone_279440");
+    //WIFIsrl.println("AT+WA=ardrone_154516");
+	delay(1500);
+	}
+	
   WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
   readARsrl();
-  
-  delay(3000); //need 3 seconds for connection to establish
+  WIFIsrl.println("ATE0"); //turn off echo
+    delay(7000); //need 7 seconds for drone to boot
   return 0;
 }
 
@@ -161,9 +174,6 @@ void Command::drone_emergency_toggle()
   command = at + sequenceNumber + ",290717952\r";
   resetcmd = resetcmd+command;
   sequenceNumber++;
-  /*at = "AT*REF=";
-  command = at + sequenceNumber + ",290717696\r";
-  resetcmd = resetcmd+command;*/
   #ifndef GAINSPAN
     ARsrl << resetcmd;
   #else
@@ -183,16 +193,10 @@ int Command::moveForward(float distanceInMeters)
   #endif
   for ( i = 0; i < distanceInMeters; ) {
   sendComwdg(60);
-  i = i+0.1;
+  i = i+0.2;
   }
-  /*
-  moveForward = makePcmd(1, 0, 0.4, 0, 0);
-  #ifndef GAINSPAN
-    ARsrl << moveForward;
-  #else
-    sendwifi(moveForward);
-  #endif
- sendComwdg(80);*/
+  moveForward = makePcmd(1, 0, 0, 0, 0);
+  sendwifi(moveForward);
   return 1;
 }
 
@@ -207,15 +211,10 @@ int Command::moveBackward(float distanceInMeters)
   #endif
   for ( i = 0; i < distanceInMeters; ) {
   sendComwdg(60);
-  i = i+0.1;
+  i = i+0.15;
   }
-  /*moveForward = makePcmd(1, 0, -0.4, 0, 0);
-  #ifndef GAINSPAN
-    ARsrl << moveForward;
-  #else
-    sendwifi(moveForward);
-  #endif
-   sendComwdg(80);*/
+  moveForward = makePcmd(1, 0, 0, 0, 0);
+  sendwifi(moveForward);
   return 1;
 }
 
@@ -288,6 +287,8 @@ int Command::moveRotate(int yawInDegrees)
   int sign;
   if ( yawInDegrees >= 0 ) sign = 1;
   else sign = -1;
+    if ( yawInDegrees >= 360 ) yawInDegrees -= 360;
+	if ( yawInDegrees <= -360) yawInDegrees += 360;
   //(sign*yawInDegrees) is always positive
   while (i < (sign*yawInDegrees) ) {
     String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
@@ -298,14 +299,14 @@ int Command::moveRotate(int yawInDegrees)
   return 1;
 }
 
-int Command::drone_takeoff() {
+void Command::drone_takeoff() {
 	for (int i = 0; i < 100; i++ ){
 		sendRef(TAKEOFF);
 		delay(30);
 	}
 }
 	
-int Command::drone_landing() {
+void Command::drone_landing() {
 	for (int i = 0; i < 60; i++ ){
 		sendRef(LANDING);
     	delay(30);
@@ -372,19 +373,17 @@ int Command::init_drone()
   sendConfig("control:flight_without_shell","FALSE");
   send_control_commands();
   //sendComwdg(100);
-  drone_emergency_toggle();
+  //drone_emergency_toggle();
   sendFtrim();
   delay(50);
-  //sendRef(EMERGENCY_TOGGLE);
 
   return 1;
 }
 
-int Command::drone_hover(int msec)
+void Command::drone_hover(int msec)
 {
   sendwifi(makePcmd(0, 0, 0, 0, 0));
   sendComwdg(msec);
-  return 1;
 }
 
 long Command::fl2int(float value)
@@ -402,8 +401,9 @@ long Command::fl2int(float value)
 void Command::readARsrl()
 {
   while (ARsrl.available()) {
+    char c = ARsrl.read();
     if (debug) {
-      PCsrl.write(ARsrl.read());
+      PCsrl.write(c);
     }
   }
 }

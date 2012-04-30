@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
-#define ARsrl Serial
+#define ARsrl Serial2
 #define PCsrl Serial
 #define WIFIsrl ARsrl
 
@@ -96,13 +96,13 @@ class Command {
      * precondition: msec > 0
      * return: 1
      */
-    int drone_hover(int msec);
+    void drone_hover(int msec);
     
     // send takeoff command
-    int drone_takeoff();
+    void drone_takeoff();
     
     // send landing command
-    int drone_landing();
+    void drone_landing();
     
     void readARsrl();
     

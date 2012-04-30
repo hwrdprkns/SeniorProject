@@ -48,10 +48,7 @@ void loop()
     }*/
     
 	com.drone_hover(2000);
-	com.moveLeft(1);
-	com.drone_hover(2000);
-	com.LEDAnim(2,3);
-	com.moveRight(1);
+	com.moveForward(1);
 	com.drone_hover(2000);
 	//com.moveDown(1);
 	/*com.moveBackward(1);

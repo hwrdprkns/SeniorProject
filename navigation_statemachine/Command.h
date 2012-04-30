@@ -45,44 +45,82 @@ class Command {
   public:
     Command();
     
-    int start_wifi_connection(); //connect to the drone using wifi, set up connection protocols
+    /* connect to the drone using wifi, set up connection protocols
+     * return: 0
+     */
+    int start_wifi_connection();
     
-    void sendComwdg(int msec); //send reset communication watchdog command repeatedly for a few secs
-    void sendFtrim(); //send flat trim and tell the drone it's lying flat
-    void sendConfig(String option, String value); //send configuration options
-    void sendRef(flying_status fs); //send basic behavior commands (takeoff, landing etc.)
-    void send_control_commands(); //send drone control mode commands
-	  
+    /* send reset communication watchdog command repeatedly for a few milliseconds
+     * precondition: msec > 0
+     */
+    void sendComwdg(int msec);
+    
+    // send flat trim and tell the drone it's lying flat
+    void sendFtrim();
+    
+    /* send configuration options
+     * preconditions: option and value between double quotes
+     */
+    void sendConfig(String option, String value);
+    
+    /* send basic behavior commands (takeoff, landing etc.)
+     * precondtions: fs is TAKEOFF, LANDING, or EMERGENCY_TOGGLE in caps
+     */
+    void sendRef(flying_status fs);
+    
+    // send drone control mode commands
+    void send_control_commands();
+
     // clear emergency flag 
     void drone_emergency_toggle();
     
-    String makeAnim(anim_mayday_t anim, int time); //send basic preset drone animation commands, not used
-    void LEDAnim(int animseq, int duration); //send LED animation command
+    /* send LED animation command
+     * preconditions: animseq is an integer picked from a predefined list of animations, durtaion is in seconds
+     */
+    void LEDAnim(int animseq, int duration);
+    
+    // send basic preset drone animation commands, not used
+    String makeAnim(anim_mayday_t anim, int time);
     
     // only used under serial connection, abandoned
     int start_s2ip();
     void quit_s2ip();
     
-    // initialize the drone after the wifi connection is established, setup flight configuration
+    /* initialize the drone after the wifi connection is established, setup flight configuration
+     * preconditions: drone place on a flat surface for ftrim
+     * return: 1
+     */
     int init_drone();
     
-    int drone_hover(int msec); //make the drone hover for a set no. of secs
-    int drone_takeoff(); //send takeoff command
-    int drone_landing(); //send landing command
+    /* make the drone hover for a few milliseconds
+     * precondition: msec > 0
+     * return: 1
+     */
+    void drone_hover(int msec);
+    
+    // send takeoff command
+    void drone_takeoff();
+    
+    // send landing command
+    void drone_landing();
     
     void readARsrl();
     
     int s2ip_running;
     int drone_is_init;
     
-    // Movement functions
+    /* Movement functions
+     * preconditions: distanceInMeters > 0, yawInDegrees can be either positive or negative
+     * comments: positive angle is clockwise rotation (top view)
+     * return: 1
+     */
     int moveForward(float distanceInMeters);
     int moveBackward(float distanceInMeters);
     int moveUp(float distanceInMeters);
     int moveDown(float distanceInMeters);
     int moveLeft(float distanceInMeters);
     int moveRight(float distanceInMeters);
-    int moveRotate(int yawInDegrees); //degrees can be either positive (clockwise from top view) or negative
+    int moveRotate(int yawInDegrees);
     
     // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
@@ -90,10 +128,15 @@ class Command {
   private:
     String at;
     String command;
-	
-    // low level routine
-    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw); //send progressive commands that make the drone move (translate/rotate)
-    long fl2int(float value); //convert float values into 32-bit integer values
+    
+    /* send progressive commands that make the drone move (translate/rotate)
+     * preconditions: roll, pitch, gaz, and yaw values in range [-1..1]
+     * return: string with the AT*PCMD command
+     */
+    String makePcmd(int enable, float roll, float pitch, float gaz, float yaw);
+    
+    // convert float values into 32-bit integer values
+    long fl2int(float value);
 };
 
 struct ring_buffer
