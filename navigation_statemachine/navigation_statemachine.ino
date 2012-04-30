@@ -1,4 +1,3 @@
-#include "WayPoint.h"
 #include "TinyGps.h"
 #include "Streaming.h"
 #include "Command.h"
@@ -9,19 +8,15 @@
 float LATITUDES[] = {42.40859985,42.40861892};
 float LONGITUDES[] = { -71.11579895, -71.11585235};
 
-
 int NUMBER_OF_WAYPOINTS = 2;
 
 TinyGPS gps;
 Command com;
 
 float currentDistance;
-float lastLatitude;
-float lastLongitude;
-unsigned long lastAge;
 int locationStep;
-
 int state;
+unsigned long lastAge;
 
 struct Location {
   float latitude;
@@ -39,7 +34,7 @@ void setup()
   PCsrl.begin(9600);
   
   state = 0; //default state
-  locationStep = 0;
+  locationStep = 0; //initalize location step
 }
 
 void loop()
@@ -154,16 +149,8 @@ void navigatePath(){
 	float destinationLong; 
   
 	double currentDistance;
-   /*
-  if(abs(currentDistance) < 10){state = 3; return; }
-  
-  int flightStatus = fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
-   
-  currentDistance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
-  
-  if(!(currentDistance < previousDistance)){state =4; return;}//Need to handle if we get no closer.
-*/
-	//ed's solution
+
+	
 	for (int i = 0; i < NUMBER_OF_WAYPOINTS; i++ ) {
 		bool done = false;
 		destinationLat = LATITUDES[i];
@@ -177,7 +164,8 @@ void navigatePath(){
 		else{ 
 			com.drone_hover(200);
 		}
-		currentDistance = WayPoint::computeDistance(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
+
+		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
 		if(abs(currentDistance) < 6) done = true;
 	}
 	}
@@ -193,11 +181,12 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
 	currentDistance = distance;
 
-    PCsrl.print("Calculated distance:");PCsrl.println(distance);
-        
+    PCsrl.print("Calculated distance:");PCsrl.println(distance);     
 	com.moveRotate(ceil(bearing));
+	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
 	com.moveForward(ceil(distance));
     com.drone_hover(200);
+
         
 	return 1;
 }
@@ -217,29 +206,22 @@ void getCurrent(){
 
 unsigned long getAge(){
    gps.f_get_position(&currentLocation.latitude,&currentLocation.longitude,&currentLocation.age);
-
-  
   return currentLocation.age;
 }
 
-void emergencySituation(int emergency){
-	
+void emergencySituation(int emergency){	
 	if(emergency == -1){
 		doShutdown();
-	}
-	
+	}	
 }
 
 void doShutdown(){
-  
   com.drone_landing();	
 } 
   
 boolean checkSanity(){
 
-  double distanceSanity = WayPoint::computeDistance(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
-  double bearingSanity = WayPoint::computeInitialBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
-  double finalSanity = WayPoint::computeFinalBearing(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
+  double distanceSanity = TinyGPS::distance_between(LATITUDES[0],LONGITUDES[0],LATITUDES[NUMBER_OF_WAYPOINTS-1],LONGITUDES[NUMBER_OF_WAYPOINTS-1]);
 
   boolean isSaneDistance = distanceSanity < 1000;
 
