@@ -43,6 +43,7 @@ void loop()
   switch (state) {
 	// sanity check
 	case 0:
+		/* only quit while loop when proper GPS signal is acquired */
         while( !verifyPropergps() && !checkSanity()){delay(100);}
 		state = 1;
 		break;
@@ -123,6 +124,7 @@ boolean continueIfProperAge(){
 }
 
 // proper way to gather GPS data and gaurantee its validity
+// return false if no valid GPS data, vice versa
 boolean verifyPropergps(){
 	int i;
 	// the gps updates its coordinates about 2.5 times per second, so we want to check it less frequently
