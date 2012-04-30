@@ -78,7 +78,7 @@ void loop()
 	// flying state
 	case 5:
 		navigatePath();
-		com.drone_hover(2000);
+		com.drone_hover(1000);
 		state = 3;
 		break;
         
@@ -157,14 +157,23 @@ void navigatePath(){
 		bool done = false;
 		destinationLat = LATITUDES[i];
 		destinationLong = LONGITUDES[i];
+		int hovercount = 0;
 
 	while(!done)
 	{
 		if(verifyPropergps()) {
+			hovercount = 0;
 			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
 		}
 		else{ 
 			com.drone_hover(200);
+			hovercount++;
+			// if hovercount reaches 10, means no valid GPS signal for 2 sec,
+			// quit
+			if ( hovercount > 10 ) {
+				com.LEDAnim(2,2);
+				return;
+			}
 		}
 
 		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
@@ -199,7 +208,7 @@ float getCourse(float startLat,float startLong,float endLat,float endLon){
   float courseOnCourse = TinyGPS::course_to(startLat,startLong,endLat,endLon);
   float myCourse = gps.f_course();
   
-  return (courseOnCourse-myCourse) < 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360); 
+  return (courseOnCourse-myCourse) >= 0 ? (courseOnCourse-myCourse):(courseOnCourse-myCourse+360); 
 }
 
 void getCurrent(){
