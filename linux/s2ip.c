@@ -1,4 +1,4 @@
-/* init_ip
+/* s2ip.c
  * initialize the udp port and socket and listen
  * used drs003 at2so.c as reference
  */
@@ -308,22 +308,6 @@ int main(int argc, char **argv) {
 	FD_SET(gld.sd_sock,&gld.pd);
 	gld.pdmax = MAX(gld.pdmax,gld.sd_sock+1);
 
-	/* program's receiving socket */
-	//do I really need this
-/*  
-	gld.rc_addr.sin_family = AF_INET;
-	gld.rc_addr.sin_port = htons(PT_RC);
-	if ((gld.rc_sock = socket(gld.rc_addr.sin_family, SOCK_DGRAM,0)) <0) {
-		fprintf(stderr,"error creating RC socket\n");
-		return errno;
-	}	
-	if ( bind(gld.rc_sock, (struct sockaddr *)&gld.rc_addr,sizeof(gld.rc_addr)) < 0) {
-		fprintf(stderr,"error binding RC socket\n");
-		return errno;
-	}
-	FD_SET(gld.rc_sock,&gld.pd);
-	gld.pdmax = MAX(gld.pdmax,gld.rc_sock+1);
-*/
 	//function upon exit
 	atexit(cleanup);
     struct sigaction sa;
@@ -402,11 +386,6 @@ int main(int argc, char **argv) {
 				n--;
 				ReadNav();
 			}
-		/*  	if (FD_ISSET(gld.rc_sock,&readfd)) {
-				n--;
-				//fprintf(stderr,"readrc()\n");
-				Readrc();
-			}*/
 			if (FD_ISSET(gld.tty, &readfd)) {
 				/* terminal has input */
 				n--;
