@@ -285,13 +285,14 @@ int Command::moveRotate(int yawInDegrees)
 {
     int i = 0;
     int sign;
-    if ( yawInDegrees >= 0 ) sign = 1;
-    else sign = -1;
     while ( yawInDegrees >= 180 ) {yawInDegrees -= 360;}
     while ( yawInDegrees < -180 ) {yawInDegrees += 360;}
+    
+    sign = (yawInDegrees >= 0) ? 1:-1;
+    
     //(sign*yawInDegrees) is always positive
     while (i < (sign*yawInDegrees) ) {
-        String moveRotate = makePcmd(1, 0, 0, 0, (0.4*sign));
+        String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
         sendwifi(moveRotate);
         delay(100);
         i += 16;

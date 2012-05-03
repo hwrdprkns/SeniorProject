@@ -195,7 +195,7 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
     PCsrl.print("Calculated distance:");PCsrl.println(distance);     
 	com.moveRotate(ceil(bearing));
 	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
-	com.moveForward(ceil(distance));
+	com.moveForward(ceil(distance/5));
     com.drone_hover(200);
 
         
