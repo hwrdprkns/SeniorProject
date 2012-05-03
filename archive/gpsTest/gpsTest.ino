@@ -19,10 +19,11 @@ void loop(){
 functions that output what ever we want...ie. Latitude or Longitude. The code is made so that 
 boolean newData tells if something is coming in and update the LAT and LON*/ 
 
- bool newData = true; //To check if new data is coming in!
+ bool newData = false; //To check if new data is coming in!
 // For one second we parse GPS data and report values
- for (unsigned long start = millis(); millis() - start < 1000;)
+ for (unsigned long start = millis(); millis() - start < 2000;)
  {
+
    while (GPSsrl.available())
    {
      char c = GPSsrl.read();
@@ -38,8 +39,24 @@ boolean newData tells if something is coming in and update the LAT and LON*/
    unsigned long age;
    gps.f_get_position(&flat, &flon, &age);
    Serial <<_FLOAT(flat,9) << "," <<_FLOAT(flon,9) << "," << age << "," << _FLOAT(gps.f_course(),4) << endl;
-   
-  }
+
+   Serial.print("\nLAT= ");
+   Serial.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 8);
+   Serial.print("\nLON= ");
+   Serial.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 8);
+   Serial.print("\nSAT= ");
+   Serial.print(gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES ? 0 : gps.satellites());
+   Serial.print("\nPREC= ");
+   Serial.print(gps.hdop() == TinyGPS::GPS_INVALID_HDOP ? 0 : gps.hdop());
+   Serial.print("\nAGE= ");
+   Serial.print(age);
+   Serial.print("\nCOURSE=");
+   Serial.print(gps.course());
+   Serial.print(",");
+   Serial.print("\nf_course=");
+   Serial.print(gps.f_course());
+   Serial.print("\n");
+ }
 
 }
 

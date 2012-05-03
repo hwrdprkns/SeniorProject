@@ -20,6 +20,13 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/* 
+modified by Weiyi Zheng, Tufts University
+05/03/2012
+to receive only GPRMC sentence to gaurantee correct update of course info
+in order to incorporate with ARdrone navigation code
+*/
+
 #include "TinyGPS.h"
 
 #define _GPRMC_TERM   "GPRMC"
@@ -212,8 +219,9 @@ bool TinyGPS::term_complete()
   {
     if (!gpsstrcmp(_term, _GPRMC_TERM))
       _sentence_type = _GPS_SENTENCE_GPRMC;
-    else if (!gpsstrcmp(_term, _GPGGA_TERM))
-      _sentence_type = _GPS_SENTENCE_GPGGA;
+    else if (!gpsstrcmp(_term, _GPGGA_TERM))	
+      //_sentence_type = _GPS_SENTENCE_GPGGA; 
+	  _sentence_type = _GPS_SENTENCE_OTHER;
     else
       _sentence_type = _GPS_SENTENCE_OTHER;
     return false;

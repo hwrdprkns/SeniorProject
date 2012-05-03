@@ -287,9 +287,7 @@ int Command::moveRotate(int yawInDegrees)
     int sign;
     while ( yawInDegrees >= 180 ) {yawInDegrees -= 360;}
     while ( yawInDegrees < -180 ) {yawInDegrees += 360;}
-    
     sign = (yawInDegrees >= 0) ? 1:-1;
-    
     //(sign*yawInDegrees) is always positive
     while (i < (sign*yawInDegrees) ) {
         String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
