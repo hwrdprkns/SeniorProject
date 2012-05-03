@@ -13,10 +13,10 @@ int NUMBER_OF_WAYPOINTS = 2;
 TinyGPS gps;
 Command com;
 
-float currentDistance;
 int locationStep;
 int state;
 unsigned long lastAge;
+unsigned long lastCourse; // used for check validity of GPS data
 
 struct Location {
   float latitude;
@@ -127,19 +127,21 @@ boolean continueIfProperAge(){
 // return false if no valid GPS data, vice versa
 boolean verifyPropergps(){
 	int i;
-	// the gps updates its coordinates about 2.5 times per second, so we want to check it less frequently
-	// this code has to run at least twice per second to get new data
-	// if need fresher data, increase the delay, but with the tradeoff of increased function running time
-	for ( i = 0; i < 10; i++ ) {
+	// the gps updates its coordinates about 5 times per second, so we want to check it less frequently
+
+	// better to loop without delays
+	// read GPS data continuously for a maximum of 250 ms
+	for (unsigned long time = millis(); (millis()-time) < 250;) {
 		if (readGPSData()) break;
-		delay(10);
 	}
 	getCurrent();
 	
-	//if the data is longer than 1 sec
-	if( currentLocation.age > 1000 || currentLocation.age <= 0){
+	//if the data is longer than 0.5 sec
+	if( currentLocation.age > 500 || currentLocation.age <= 0){
 		return false;
 	}
+	if  ( lastCourse == gps.course() ) return false;
+	else lastCourse = gps.course();
 	
 	return true;
 }
@@ -168,10 +170,9 @@ void navigatePath(){
 		else{ 
 			com.drone_hover(200);
 			hovercount++;
-			// if hovercount reaches 10, means no valid GPS signal for 2 sec,
+			// if hovercount reaches 20, means no valid GPS signal for 4 sec,
 			// quit
-			if ( hovercount > 10 ) {
-				com.LEDAnim(2,2);
+			if ( hovercount > 20 ) {
 				return;
 			}
 		}
@@ -190,7 +191,6 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	PCsrl.print("Calculated bearing:");PCsrl.println(bearing);
 	
 	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
-	currentDistance = distance;
 
     PCsrl.print("Calculated distance:");PCsrl.println(distance);     
 	com.moveRotate(ceil(bearing));
