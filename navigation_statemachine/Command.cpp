@@ -156,7 +156,7 @@ int Command::start_wifi_connection()
     }
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
-    delay(1000); //need 1 seconds for connection to establish
+    delay(7000); //need 7 seconds for connection to establish
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
 }
@@ -374,7 +374,7 @@ int Command::init_drone()
     //sendComwdg(100);
     //drone_emergency_toggle();
     sendFtrim();
-    delay(50);
+    delay(2000); // ftrim() needs 2 seconds to get done
 
     return 1;
 }

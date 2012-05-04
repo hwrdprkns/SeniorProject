@@ -61,7 +61,7 @@ void loop()
 		com.drone_hover(1000);
 		com.moveForward(0.5);  //move a small distance to enable bearing calculation on GPS
 		com.drone_hover(1000);
-		state = 5;
+		state = 3;
 		break;
 		
 	// landing
