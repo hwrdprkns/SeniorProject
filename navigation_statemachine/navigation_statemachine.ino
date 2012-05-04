@@ -5,10 +5,30 @@
 
 #define GPSsrl Serial3
 
+/* basketball court */
+/*
 float LATITUDES[] = {42.40859985,42.40861892};
 float LONGITUDES[] = { -71.11579895, -71.11585235};
+*/   
 
-int NUMBER_OF_WAYPOINTS = 2;
+/* volleyball court */
+/*
+float LATITUDES[] = {42.40882873,42.40877914};
+float LONGITUDES[] = { -71.11622619, -71.11621093};
+*/
+
+//volleyball court 2
+//42.408779144,-71.116058349
+/*
+float LATITUDES[] = {42.408779144};
+float LONGITUDES[] = { -71.116058349};
+*/
+//acquired by verifypropergps, in front of halligan
+//current point 0 lat: 42.40818023 log: -71.11601257
+float LATITUDES[] = {42.40818023};
+float LONGITUDES[] = { -71.11601257};
+
+int NUMBER_OF_WAYPOINTS = 1;
 
 TinyGPS gps;
 Command com;
@@ -31,7 +51,7 @@ String atcmd = "";
 void setup()
 {
   GPSsrl.begin(57600); // Baud rate of our GPS
-  PCsrl.begin(9600);
+  PCsrl.begin(57600);
   
   state = 0; //default state
   locationStep = 0; //initalize location step
@@ -61,7 +81,7 @@ void loop()
 		com.drone_hover(1000);
 		com.moveForward(0.5);  //move a small distance to enable bearing calculation on GPS
 		com.drone_hover(1000);
-		state = 3;
+		state = 5;
 		break;
 		
 	// landing
@@ -79,6 +99,7 @@ void loop()
 	case 5:
 		navigatePath();
 		com.drone_hover(1000);
+                //delay(1000);
 		state = 3;
 		break;
         
@@ -140,7 +161,12 @@ boolean verifyPropergps(){
 	if( currentLocation.age > 500 || currentLocation.age <= 0){
 		return false;
 	}
-	if  ( lastCourse == gps.course() ) return false;
+	if  ( lastCourse == gps.course() ) {
+          if (debug) {
+             PCsrl << "update course failed" << endl;
+             return false;
+          }
+        } 
 	else lastCourse = gps.course();
 	
 	return true;
@@ -153,8 +179,7 @@ void navigatePath(){
 	float destinationLong; 
   
 	double currentDistance;
-
-	
+        unsigned long gpstime,gpsdate,gpsage;
 	for (int i = 0; i < NUMBER_OF_WAYPOINTS; i++ ) {
 		bool done = false;
 		destinationLat = LATITUDES[i];
@@ -162,12 +187,21 @@ void navigatePath(){
 		int hovercount = 0;
 
 	while(!done)
-	{
+	{        //PCsrl << "going to point " << i << " lat: " << _FLOAT(destinationLat,8) << " log: " << _FLOAT(destinationLong,8) <<endl;
 		if(verifyPropergps()) {
+  		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
+		if(abs(currentDistance) < 5) {
+                //PCsrl << "follow point " << i <<" success, current distance" << currentDistance <<endl;
+                done = true;
+	        }
+                  	gps.get_datetime(&gpsdate,&gpstime,&gpsage);
+                  //PCsrl << "current gps time" << gpstime <<endl;
+                  //PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
 			hovercount = 0;
 			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
 		}
 		else{ 
+                    if (debug) { PCsrl << "gps data acquiring failed" <<endl;}
 			com.drone_hover(200);
 			hovercount++;
 			// if hovercount reaches 20, means no valid GPS signal for 4 sec,
@@ -176,27 +210,22 @@ void navigatePath(){
 				return;
 			}
 		}
-
-		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
-		if(abs(currentDistance) < 6) done = true;
 	}
-	}
- 
+    }
 }
 
 int fly_to(float startLat,float startLong,float endLat,float endLon){
 	
 	float bearing = getCourse(startLat,startLong,endLat,endLon);
-	
-	PCsrl.print("Calculated bearing:");PCsrl.println(bearing);
-	
-	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
 
-    PCsrl.print("Calculated distance:");PCsrl.println(distance);     
+	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
+      PCsrl.print("Calculated bearing:");PCsrl.print(bearing);
+      PCsrl.print(" distance:");PCsrl.println(distance);     
 	com.moveRotate(ceil(bearing));
 	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
 	com.moveForward(ceil(distance/5));
     com.drone_hover(200);
+    delay(500);
 
         
 	return 1;

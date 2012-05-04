@@ -9,7 +9,7 @@ TinyGPS gps; //Create instance
 void setup()
 {
  GPSsrl.begin(57600); // Baud rate of our GPS
- Serial.begin(9600);
+ Serial.begin(57600);
  Serial << "Starting" <<endl;
 }
 
@@ -21,7 +21,7 @@ boolean newData tells if something is coming in and update the LAT and LON*/
 
  bool newData = false; //To check if new data is coming in!
 // For one second we parse GPS data and report values
- for (unsigned long start = millis(); millis() - start < 2000;)
+ for (unsigned long start = millis(); millis() - start < 500;)
  {
 
    while (GPSsrl.available())
@@ -39,7 +39,7 @@ boolean newData tells if something is coming in and update the LAT and LON*/
    unsigned long age;
    gps.f_get_position(&flat, &flon, &age);
    Serial <<_FLOAT(flat,9) << "," <<_FLOAT(flon,9) << "," << age << "," << _FLOAT(gps.f_course(),4) << endl;
-
+/*
    Serial.print("\nLAT= ");
    Serial.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 8);
    Serial.print("\nLON= ");
@@ -56,6 +56,7 @@ boolean newData tells if something is coming in and update the LAT and LON*/
    Serial.print("\nf_course=");
    Serial.print(gps.f_course());
    Serial.print("\n");
+   */
  }
 
 }
