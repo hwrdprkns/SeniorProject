@@ -1,4 +1,5 @@
 #ifndef GAINSPAN
+//define GAINSPAN meaning we are using gainspan wifi adapter
 #define GAINSPAN
 #include "Arduino.h"
 #include "Command.h"
@@ -210,7 +211,7 @@ int Command::moveForward_time(int msec, int speed)
 	for ( unsigned long time = millis() ; (millis() - time) < msec; ) {
         sendComwdg(60);
     }
-	moveForward = makePcmd(1, 0, 0, 0, 0);
+      moveForward = makePcmd(1, 0, 0, 0, 0);
     sendwifi(moveForward);
     return 1;
 }
@@ -296,6 +297,7 @@ int Command::moveRight(float distanceInMeters)
     return 1;
 }
 
+//moves up a little bit too. in windy condition the drone tends to lose altitude
 int Command::staticRotate(int yawInDegrees)
 {
     int i = 0;
@@ -305,7 +307,7 @@ int Command::staticRotate(int yawInDegrees)
     sign = (yawInDegrees >= 0) ? 1:-1;
     //(sign*yawInDegrees) is always positive
     while (i < (sign*yawInDegrees) ) {
-        String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
+        String moveRotate = makePcmd(1, 0, 0, 0.2, (0.3*sign));
         sendwifi(moveRotate);
         delay(100);
         i += 16;
@@ -408,7 +410,8 @@ int Command::init_drone()
 {
     PCsrl << "I'm initing\r\n";
     sendConfig("general:navdata_demo","TRUE");
-    sendConfig("control:altitude_max","3000");
+	// seems 1.8 meter max is enough to lose the supersonic sensor, more stable flight may require less altitude
+    sendConfig("control:altitude_max","1800");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
     sendConfig("control:flight_without_shell","FALSE");

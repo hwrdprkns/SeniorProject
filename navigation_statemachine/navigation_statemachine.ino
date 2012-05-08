@@ -54,13 +54,20 @@ struct Location {
 int debug = 1;
 String atcmd = "";
 
+/*** pin for user control **/
+int inPin = 53;
+int reversed;
+
 void setup()
 {
   GPSsrl.begin(57600); // Baud rate of our GPS
   PCsrl.begin(57600);
   
-  state = 1; //default state
+  state = 0; //default state
   locationStep = 0; //initalize location step
+  pinMode(inPin, INPUT);      // sets the digital pin 7 as input
+  digitalWrite(inPin,HIGH);
+  reversed = 0;
 }
 
 void loop()
@@ -85,10 +92,10 @@ void loop()
 	case 2:
 		com.drone_takeoff();
 		com.drone_hover(1000);
-		//com.moveForward(0.5);  //move a small distance to enable bearing calculation on GPS
 		com.moveUp(1);
                 com.drone_hover(1000);
-		com.moveForward_time(250,40);
+                // this is important because it gives you the initial bearing, don't go too slow
+		com.moveForward_time(250,40); 
 		state = 5;
 		break;
 		
@@ -115,7 +122,22 @@ void loop()
 		
 	//stop running
 	default:
-		while (1) {}
+		while (1) {
+                //reset the default value of the pin
+                digitalWrite(inPin,HIGH);
+                int pinval = digitalRead(inPin);
+                if ( pinval == 0 ) {
+                  reversed = !reversed;
+                  //PCsrl << reversed <<endl; 
+                 com.LEDAnim(2,2);
+                 delay(2000);
+                 state = 2;
+                  break;
+                }
+                //PCsrl << pinval <<endl;
+                
+              
+                }
   }
 } 
 
@@ -130,26 +152,6 @@ boolean readGPSData(){
 	}
 
         //PCsrl << "readGPSData returned false" << endl;
-	return false;
-}
-
-/* This will return false if the age is invalid or too long. */
-boolean continueIfProperAge(){
-	
-	if(lastAge == getAge()){
-		int iter = 0;
-		for(int iter = 0;iter<100;iter++){
-			delay(5);
-			readGPSData();
-			if(lastAge != getAge()){
-				lastAge = getAge();
-				return true;
-			}
-		}
-	}
-	
-	lastAge = getAge();
-	PCsrl << "Did not return a proper age." << endl;
 	return false;
 }
 
@@ -168,11 +170,9 @@ int verifyPropergps(){
 	
 	//if the data is longer than 0.5 sec
 	if( currentLocation.age > 500 || currentLocation.age <= 0){
-          //PCsrl << " gps NOSIG" <<endl;
 		return NOSIG;
 	}
 	if  ( lastCourse == gps.course() ) {
-  //PCsrl << " gps NOCOURSE" <<endl;
 		return NOCOURSE;
         } 
 	else lastCourse = gps.course();
@@ -188,8 +188,15 @@ void navigatePath(){
   
 	double currentDistance;
     unsigned long gpstime,gpsdate,gpsage;
-	for (int i = 0; i < NUMBER_OF_WAYPOINTS; i++ ) {
+	for (int seq = 0; seq < NUMBER_OF_WAYPOINTS; seq++ ) {
 		bool done = false;
+                int i;
+                //reverse path support
+                if (reversed) { 
+                  i = NUMBER_OF_WAYPOINTS - 1 - seq;
+                } else {
+                  i = seq;
+                }
 		destinationLat = LATITUDES[i];
 		destinationLong = LONGITUDES[i];
 		int hovercount = 0;
@@ -233,8 +240,8 @@ void navigatePath(){
 		
 		case NOCOURSE: {
 			if (debug) { PCsrl << "gps data no course update, moveforward" <<endl;}
-			com.moveForward_time(500,10);
-			//delay(500);
+			com.moveForward_time(500,20);
+			com.moveUp(1);
 			break;
 		}
 		}
@@ -252,11 +259,9 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	com.staticRotate(ceil(bearing));
 	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
 	//com.moveForward(ceil(distance/3));
-         com.moveForward_time(600,30);
+         com.moveForward_time(600,40);
     //com.drone_hover(200);
-    //delay(500);
-
-        
+    //delay(500);     
 	return 1;
 }
 

@@ -5,6 +5,10 @@
 TinyGPS gps; //Create instance
 
 #define GPSsrl Serial3
+//testing coordinates
+float LATITUDES[] = {42.40818023};
+float LONGITUDES[] = { -71.11601257};
+
 
 void setup()
 {
@@ -38,7 +42,7 @@ boolean newData tells if something is coming in and update the LAT and LON*/
    float flat, flon;
    unsigned long age;
    gps.f_get_position(&flat, &flon, &age);
-   Serial <<_FLOAT(flat,9) << "," <<_FLOAT(flon,9) << "," << age << "," << _FLOAT(gps.f_course(),4) << endl;
+   Serial <<_FLOAT(flat,8) << "," <<_FLOAT(flon,8) << "," << age << "," << _FLOAT(gps.f_course(),4) << endl;
 /*
    Serial.print("\nLAT= ");
    Serial.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 8);
@@ -57,6 +61,8 @@ boolean newData tells if something is coming in and update the LAT and LON*/
    Serial.print(gps.f_course());
    Serial.print("\n");
    */
+   int i = 0;
+   double currentDistance = gps.distance_between(flat,flon,LATITUDES[i],LONGITUDES[i]);
  }
 
 }

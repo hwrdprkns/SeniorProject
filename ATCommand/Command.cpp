@@ -156,8 +156,8 @@ int Command::start_wifi_connection()
     }
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
-    delay(7000); //need 7 seconds for connection to establish
-	//delay(1000); //if drone already booted, for testing purpose
+    //delay(7000); //need 7 seconds for connection to establish
+	delay(1000); //if drone already booted, for testing purpose
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
 }
@@ -408,7 +408,7 @@ int Command::init_drone()
 {
     PCsrl << "I'm initing\r\n";
     sendConfig("general:navdata_demo","TRUE");
-    sendConfig("control:altitude_max","3000");
+    sendConfig("control:altitude_max","1800");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
     sendConfig("control:flight_without_shell","FALSE");
