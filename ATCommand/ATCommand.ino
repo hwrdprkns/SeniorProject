@@ -8,7 +8,7 @@ extern resultint_ resultint;
 Command com;
 String atcmd = "";
 
-#include "TimerThree.h"
+
 #define LEDpin 13
 
 void setup()
@@ -36,15 +36,12 @@ void loop()
     //com.LEDAnim(2,3);
     
 	com.drone_takeoff();
-    /*
-    for (int i=0; i<100; i++) {
-      com.moveRotate(360);
-      delay(50);
-    }*/
+
     
 	com.drone_hover(2000);
 	//com.moveForward(1);
-	com.moveRotate(90);
+	//com.moveRotate(90);
+	com.moveForward_time(2,1);
 	com.drone_hover(2000);
 	//com.moveDown(1);
 	/*com.moveBackward(1);

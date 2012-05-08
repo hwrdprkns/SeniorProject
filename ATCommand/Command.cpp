@@ -201,6 +201,20 @@ int Command::moveForward(float distanceInMeters)
     return 1;
 }
 
+int Command::moveForward_time(int msec, int speed)
+{
+	if ( speed > 100 ) speed = 100;
+	if ( speed < 0 ) speed = 0;
+	String moveForward = makePcmd(1,0, -0.01*speed, 0,0);
+	sendwifi(moveForward);
+	for ( unsigned long time = millis() ; (millis() - time) < msec; ) {
+        sendComwdg(60);
+    }
+	moveForward = makePcmd(1, 0, 0, 0, 0);
+    sendwifi(moveForward);
+    return 1;
+}
+
 int Command::moveBackward(float distanceInMeters)
 {
     float i = 0;

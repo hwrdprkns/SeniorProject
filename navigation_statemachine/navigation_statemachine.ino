@@ -66,7 +66,7 @@ void loop()
 	case 0:
 		/* only quit while loop when proper GPS signal is acquired */
         while( ( verifyPropergps() != NOSIG ) && !checkSanity()){delay(100);}
-		state = 1;
+		state = 5;
 		break;
   
 	// initialization connection
@@ -99,7 +99,7 @@ void loop()
 	// flying state
 	case 5:
 		navigatePath();
-		com.drone_hover(1000);
+		//com.drone_hover(1000);
                 //delay(1000);
 		state = 3;
 		break;
@@ -177,7 +177,7 @@ void navigatePath(){
 	float destinationLong; 
   
 	double currentDistance;
-        unsigned long gpstime,gpsdate,gpsage;
+    unsigned long gpstime,gpsdate,gpsage;
 	for (int i = 0; i < NUMBER_OF_WAYPOINTS; i++ ) {
 		bool done = false;
 		destinationLat = LATITUDES[i];
@@ -196,7 +196,7 @@ void navigatePath(){
                 done = true;
 	        }
                   	gps.get_datetime(&gpsdate,&gpstime,&gpsage);
-                  //PCsrl << "current gps time" << gpstime <<endl;
+                  PCsrl << "current gps time" << gpstime <<endl;
                   //PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
 			hovercount = 0;
 			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
@@ -206,7 +206,7 @@ void navigatePath(){
 		//else{ 
 		case NOSIG: {
             if (debug) { PCsrl << "gps data acquiring failed" <<endl;}
-			com.drone_hover(200);
+			//com.drone_hover(200);
 			hovercount++;
 			// if hovercount reaches 20, means no valid GPS signal for 4 sec,
 			// quit
@@ -218,7 +218,8 @@ void navigatePath(){
 		
 		case NOCOURSE: {
 			if (debug) { PCsrl << "gps data no course update" <<endl;}
-			com.moveForward(1);
+			//com.moveForward(1);
+			delay(200);
 			break;
 		}
 		}
@@ -233,11 +234,11 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
       PCsrl.print("Calculated bearing:");PCsrl.print(bearing);
       PCsrl.print(" distance:");PCsrl.println(distance);     
-	com.moveRotate(ceil(bearing));
+	//com.moveRotate(ceil(bearing));
 	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
-	com.moveForward(ceil(distance/5));
-    com.drone_hover(200);
-    delay(500);
+	//com.moveForward(ceil(distance/5));
+    //com.drone_hover(200);
+    delay(1000);
 
         
 	return 1;
