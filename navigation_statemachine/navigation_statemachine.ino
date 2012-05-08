@@ -24,12 +24,17 @@ float LATITUDES[] = {42.408779144};
 float LONGITUDES[] = { -71.116058349};
 */
 //acquired by verifypropergps, in front of halligan
-//current point 0 lat: 42.40818023 log: -71.11601257
-float LATITUDES[] = {42.40818023};
+//lat: 42.40818023 log: -71.11601257
+/*float LATITUDES[] = {42.40818023};
 float LONGITUDES[] = { -71.11601257};
+*/
+/* halligan front 2 point */
+float LATITUDES[] = { 42.40824890, 42.40808105  };
+float LONGITUDES[] = { -71.11589813 , -71.11599731 };
+
 
 enum GPSSTATUS {NOSIG, NOCOURSE, GOOD};
-int NUMBER_OF_WAYPOINTS = 1;
+int NUMBER_OF_WAYPOINTS = 2;
 
 TinyGPS gps;
 Command com;
@@ -54,7 +59,7 @@ void setup()
   GPSsrl.begin(57600); // Baud rate of our GPS
   PCsrl.begin(57600);
   
-  state = 0; //default state
+  state = 1; //default state
   locationStep = 0; //initalize location step
 }
 
@@ -65,8 +70,8 @@ void loop()
 	// sanity check
 	case 0:
 		/* only quit while loop when proper GPS signal is acquired */
-        while( ( verifyPropergps() != NOSIG ) && !checkSanity()){delay(100);}
-		state = 5;
+        while( ( verifyPropergps() == NOSIG ) || !checkSanity()){delay(300);}
+		state = 1;
 		break;
   
 	// initialization connection
@@ -80,8 +85,10 @@ void loop()
 	case 2:
 		com.drone_takeoff();
 		com.drone_hover(1000);
-		com.moveForward(0.5);  //move a small distance to enable bearing calculation on GPS
-		com.drone_hover(1000);
+		//com.moveForward(0.5);  //move a small distance to enable bearing calculation on GPS
+		com.moveUp(1);
+                com.drone_hover(1000);
+		com.moveForward_time(250,40);
 		state = 5;
 		break;
 		
@@ -94,6 +101,7 @@ void loop()
 	// emergency toggle
 	case 4:
 		com.drone_emergency_toggle();
+                state = 2;
 		break;
 		
 	// flying state
@@ -160,9 +168,11 @@ int verifyPropergps(){
 	
 	//if the data is longer than 0.5 sec
 	if( currentLocation.age > 500 || currentLocation.age <= 0){
+          //PCsrl << " gps NOSIG" <<endl;
 		return NOSIG;
 	}
 	if  ( lastCourse == gps.course() ) {
+  //PCsrl << " gps NOCOURSE" <<endl;
 		return NOCOURSE;
         } 
 	else lastCourse = gps.course();
@@ -188,25 +198,19 @@ void navigatePath(){
 	{        //PCsrl << "going to point " << i << " lat: " << _FLOAT(destinationLat,8) << " log: " << _FLOAT(destinationLong,8) <<endl;
 		//if(verifyPropergps()) {
 		int a = verifyPropergps();
-		switch (a) {
-		case GOOD: {
-  		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
-		if(abs(currentDistance) < 5) {
-                //PCsrl << "follow point " << i <<" success, current distance" << currentDistance <<endl;
-                done = true;
-	        }
-                  	gps.get_datetime(&gpsdate,&gpstime,&gpsage);
-                  PCsrl << "current gps time" << gpstime <<endl;
-                  //PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
-			hovercount = 0;
-			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
-			break;
+		if ( a != NOSIG) {
+			currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
+			if(abs(currentDistance) < 3) {
+				//PCsrl << "follow point " << i <<" success, current distance" << currentDistance <<endl;
+				com.LEDAnim(2,2);
+				com.drone_hover(2000);
+				break;
+			}
 		}
-		
-		//else{ 
+		switch (a) {
 		case NOSIG: {
             if (debug) { PCsrl << "gps data acquiring failed" <<endl;}
-			//com.drone_hover(200);
+			com.drone_hover(200);
 			hovercount++;
 			// if hovercount reaches 20, means no valid GPS signal for 4 sec,
 			// quit
@@ -216,10 +220,21 @@ void navigatePath(){
 			break;
 		}
 		
+		case GOOD: {
+        gps.get_datetime(&gpsdate,&gpstime,&gpsage);
+        PCsrl << "current gps time" << gpstime <<endl;
+        PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
+			hovercount = 0;
+			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
+			break;
+		}
+		
+		//else{ 
+		
 		case NOCOURSE: {
-			if (debug) { PCsrl << "gps data no course update" <<endl;}
-			//com.moveForward(1);
-			delay(200);
+			if (debug) { PCsrl << "gps data no course update, moveforward" <<endl;}
+			com.moveForward_time(500,10);
+			//delay(500);
 			break;
 		}
 		}
@@ -234,11 +249,12 @@ int fly_to(float startLat,float startLong,float endLat,float endLon){
 	float distance = TinyGPS::distance_between(startLat,startLong,endLat,endLon);
       PCsrl.print("Calculated bearing:");PCsrl.print(bearing);
       PCsrl.print(" distance:");PCsrl.println(distance);     
-	//com.moveRotate(ceil(bearing));
+	com.staticRotate(ceil(bearing));
 	// Ed: i fixed the moveForward code, now 1 meter actually means 1 meter (more or less)
-	//com.moveForward(ceil(distance/5));
+	//com.moveForward(ceil(distance/3));
+         com.moveForward_time(600,30);
     //com.drone_hover(200);
-    delay(1000);
+    //delay(500);
 
         
 	return 1;

@@ -13,7 +13,7 @@ String atcmd = "";
 
 void setup()
 {
-  PCsrl.begin(9600);
+  PCsrl.begin(57600);
   if (debug) {
     // never use three ! together in arduino code
     PCsrl << "Whatever!\r\n";
@@ -41,7 +41,8 @@ void loop()
 	com.drone_hover(2000);
 	//com.moveForward(1);
 	//com.moveRotate(90);
-	com.moveForward_time(2,1);
+	//com.moveForward_time(2,1);
+	com.moveUp(2);
 	com.drone_hover(2000);
 	//com.moveDown(1);
 	/*com.moveBackward(1);

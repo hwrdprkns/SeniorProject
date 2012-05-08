@@ -238,11 +238,11 @@ int Command::moveUp(float distanceInMeters)
     float i = 0;
     String move;
     for ( i = 0; i < distanceInMeters; ) {
-        move = makePcmd(1, 0, 0, 0.9, 0);
+        move = makePcmd(1, 0, 0, 0.99, 0);
         sendwifi(move);
-        sendComwdg(30);
+        //sendComwdg(60);
         delay(80);
-        i = i+0.1;
+        i = i+0.08;
     }
     return 1;
 }
