@@ -120,7 +120,8 @@ class Command {
     int moveDown(float distanceInMeters);
     int moveLeft(float distanceInMeters);
     int moveRight(float distanceInMeters);
-    int moveRotate(int yawInDegrees);
+    int moveRotate(int degree);
+	int staticRotate(int yawInDegrees);
     
     // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);

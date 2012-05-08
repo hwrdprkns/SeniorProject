@@ -35,8 +35,6 @@ void setup() {
 
 
 void loop() {
-  //delay(500);
-  //Serial.println("I am stealing cycles");
 char c;
  while ( Serial.available() ) {
    c = Serial.read();
@@ -46,8 +44,5 @@ char c;
    c = Serial3.read();
    Serial.write(c);
  }
-   
-  //Serial.println("ring buffer output done");
-
 }
 

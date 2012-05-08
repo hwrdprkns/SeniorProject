@@ -28,6 +28,7 @@ float LONGITUDES[] = { -71.116058349};
 float LATITUDES[] = {42.40818023};
 float LONGITUDES[] = { -71.11601257};
 
+enum GPSSTATUS {NOSIG, NOCOURSE, GOOD};
 int NUMBER_OF_WAYPOINTS = 1;
 
 TinyGPS gps;
@@ -64,7 +65,7 @@ void loop()
 	// sanity check
 	case 0:
 		/* only quit while loop when proper GPS signal is acquired */
-        while( !verifyPropergps() && !checkSanity()){delay(100);}
+        while( ( verifyPropergps() != NOSIG ) && !checkSanity()){delay(100);}
 		state = 1;
 		break;
   
@@ -146,7 +147,7 @@ boolean continueIfProperAge(){
 
 // proper way to gather GPS data and gaurantee its validity
 // return false if no valid GPS data, vice versa
-boolean verifyPropergps(){
+int verifyPropergps(){
 	int i;
 	// the gps updates its coordinates about 5 times per second, so we want to check it less frequently
 
@@ -159,17 +160,14 @@ boolean verifyPropergps(){
 	
 	//if the data is longer than 0.5 sec
 	if( currentLocation.age > 500 || currentLocation.age <= 0){
-		return false;
+		return NOSIG;
 	}
 	if  ( lastCourse == gps.course() ) {
-          if (debug) {
-             PCsrl << "update course failed" << endl;
-             return false;
-          }
+		return NOCOURSE;
         } 
 	else lastCourse = gps.course();
 	
-	return true;
+	return GOOD;
 }
 
 
@@ -188,7 +186,10 @@ void navigatePath(){
 
 	while(!done)
 	{        //PCsrl << "going to point " << i << " lat: " << _FLOAT(destinationLat,8) << " log: " << _FLOAT(destinationLong,8) <<endl;
-		if(verifyPropergps()) {
+		//if(verifyPropergps()) {
+		int a = verifyPropergps();
+		switch (a) {
+		case GOOD: {
   		currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
 		if(abs(currentDistance) < 5) {
                 //PCsrl << "follow point " << i <<" success, current distance" << currentDistance <<endl;
@@ -199,9 +200,12 @@ void navigatePath(){
                   //PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
 			hovercount = 0;
 			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
+			break;
 		}
-		else{ 
-                    if (debug) { PCsrl << "gps data acquiring failed" <<endl;}
+		
+		//else{ 
+		case NOSIG: {
+            if (debug) { PCsrl << "gps data acquiring failed" <<endl;}
 			com.drone_hover(200);
 			hovercount++;
 			// if hovercount reaches 20, means no valid GPS signal for 4 sec,
@@ -209,9 +213,17 @@ void navigatePath(){
 			if ( hovercount > 20 ) {
 				return;
 			}
+			break;
 		}
-	}
+		
+		case NOCOURSE: {
+			if (debug) { PCsrl << "gps data no course update" <<endl;}
+			com.moveForward(1);
+			break;
+		}
+		}
     }
+	}
 }
 
 int fly_to(float startLat,float startLong,float endLat,float endLon){

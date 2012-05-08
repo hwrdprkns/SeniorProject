@@ -20,7 +20,6 @@ void setup()
   }
   
   com.start_wifi_connection();
-
   com.drone_is_init = com.init_drone();
 }
 
@@ -37,10 +36,6 @@ void loop()
     //com.LEDAnim(2,3);
     
 	com.drone_takeoff();
-	//com.sendRef(LANDING);
-    //com.sendRef(TAKEOFF);
-    
-	//com.drone_hover(5000);
     /*
     for (int i=0; i<100; i++) {
       com.moveRotate(360);
@@ -48,15 +43,13 @@ void loop()
     }*/
     
 	com.drone_hover(2000);
-	com.moveForward(1);
+	//com.moveForward(1);
+	com.moveRotate(90);
 	com.drone_hover(2000);
 	//com.moveDown(1);
 	/*com.moveBackward(1);
 	com.drone_hover(2000);*/
-    /*delay(50);
-    
-    delay(500);
-    */
+
 
 	com.drone_landing();
 

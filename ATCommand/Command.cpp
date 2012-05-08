@@ -157,6 +157,7 @@ int Command::start_wifi_connection()
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
     delay(7000); //need 7 seconds for connection to establish
+	//delay(1000); //if drone already booted, for testing purpose
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
 }
@@ -281,7 +282,7 @@ int Command::moveRight(float distanceInMeters)
     return 1;
 }
 
-int Command::moveRotate(int yawInDegrees)
+int Command::staticRotate(int yawInDegrees)
 {
     int i = 0;
     int sign;
@@ -295,6 +296,33 @@ int Command::moveRotate(int yawInDegrees)
         delay(100);
         i += 16;
     }
+    return 1;
+}
+
+int Command::moveRotate(int degree) {
+    int i = 0;
+    int sign;
+    while ( degree >= 180 ) {degree -= 360;}
+    while ( degree < -180 ) {degree += 360;}
+    sign = (degree >= 0) ? 1:-1;
+    //(sign*degree) is always positive
+	// v1
+    /*while (i < (sign*degree) ) {
+		String moveRotate = makePcmd(1, 0, -0.2, 0, (0.3*sign));
+        sendwifi(moveRotate);
+        delay(100);
+        i += 16;
+    }*/
+		
+	//v2
+	String moveRotate = makePcmd(1, 0, -.4, 0, (0.45*sign));
+    sendwifi(moveRotate);
+	delay(50);
+	while (i < (sign*degree) ) {
+		sendComwdg(60);
+        i += 12;
+    }
+
     return 1;
 }
 
