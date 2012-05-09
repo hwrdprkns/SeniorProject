@@ -29,12 +29,24 @@ float LONGITUDES[] = { -71.116058349};
 float LONGITUDES[] = { -71.11601257};
 */
 /* halligan front 2 point */
-float LATITUDES[] = { 42.40824890, 42.40808105  };
+/*
+float LATITUDES[] = { 42.40850067, 42.40808105  };
 float LONGITUDES[] = { -71.11589813 , -71.11599731 };
+*/
 
+/* parking lot 4 points */
+// ignore one for now, 42.40824890, -71.11486816 ,
+/*
+float LATITUDES[] = {  42.40839004, 42.40827178, 42.40829849  };
+float LONGITUDES[] = {  -71.11473083, -71.11486053, -71.11498260 };
+*/
+
+/* bromfield pearson */
+float LATITUDES[] = {  42.40573120, 42.40575027, 42.40573120, 42.40579986  };
+float LONGITUDES[] = {  -71.11646270, -71.11652374, -71.11646270, -71.11633300 };
 
 enum GPSSTATUS {NOSIG, NOCOURSE, GOOD};
-int NUMBER_OF_WAYPOINTS = 2;
+int NUMBER_OF_WAYPOINTS = 4;
 
 TinyGPS gps;
 Command com;
@@ -93,9 +105,9 @@ void loop()
 		com.drone_takeoff();
 		com.drone_hover(1000);
 		com.moveUp(1);
-                com.drone_hover(1000);
+                com.drone_hover(500);
                 // this is important because it gives you the initial bearing, don't go too slow
-		com.moveForward_time(250,40); 
+		com.moveForward_time(400,40); 
 		state = 5;
 		break;
 		
@@ -108,14 +120,14 @@ void loop()
 	// emergency toggle
 	case 4:
 		com.drone_emergency_toggle();
-                state = 2;
+        state = 2;
 		break;
 		
 	// flying state
 	case 5:
 		navigatePath();
 		//com.drone_hover(1000);
-                //delay(1000);
+        //delay(1000);
 		state = 3;
 		break;
         
@@ -209,8 +221,8 @@ void navigatePath(){
 			currentDistance = TinyGPS::distance_between(currentLocation.latitude,currentLocation.longitude,LATITUDES[i],LONGITUDES[i]);
 			if(abs(currentDistance) < 3) {
 				//PCsrl << "follow point " << i <<" success, current distance" << currentDistance <<endl;
-				com.LEDAnim(2,2);
-				com.drone_hover(2000);
+				com.LEDAnim(2,1);
+				com.drone_hover(1000);
 				break;
 			}
 		}
@@ -229,8 +241,8 @@ void navigatePath(){
 		
 		case GOOD: {
         gps.get_datetime(&gpsdate,&gpstime,&gpsage);
-        PCsrl << "current gps time" << gpstime <<endl;
-        PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
+        //PCsrl << "current gps time" << gpstime <<endl;
+        //PCsrl << "current point " << i << " lat: " << _FLOAT(currentLocation.latitude,8) << " log: " << _FLOAT(currentLocation.longitude,8) <<endl;
 			hovercount = 0;
 			fly_to(currentLocation.latitude,currentLocation.longitude,destinationLat,destinationLong); //Maybe return some kind of flight status here?
 			break;
@@ -241,7 +253,7 @@ void navigatePath(){
 		case NOCOURSE: {
 			if (debug) { PCsrl << "gps data no course update, moveforward" <<endl;}
 			com.moveForward_time(500,20);
-			com.moveUp(1);
+			//com.moveUp(1);
 			break;
 		}
 		}

@@ -3,7 +3,7 @@
 #include "Streaming.h"
 
 TinyGPS gps; //Create instance
-
+ 
 #define GPSsrl Serial3
 //testing coordinates
 float LATITUDES[] = {42.40818023};

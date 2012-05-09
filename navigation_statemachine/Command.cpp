@@ -211,7 +211,7 @@ int Command::moveForward_time(int msec, int speed)
 	for ( unsigned long time = millis() ; (millis() - time) < msec; ) {
         sendComwdg(60);
     }
-      moveForward = makePcmd(1, 0, 0, 0, 0);
+    moveForward = makePcmd(1, 0, 0, 0, 0);
     sendwifi(moveForward);
     return 1;
 }
@@ -411,10 +411,10 @@ int Command::init_drone()
     PCsrl << "I'm initing\r\n";
     sendConfig("general:navdata_demo","TRUE");
 	// seems 1.8 meter max is enough to lose the supersonic sensor, more stable flight may require less altitude
-    sendConfig("control:altitude_max","1800");
+    sendConfig("control:altitude_max","2000");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
-    sendConfig("control:flight_without_shell","FALSE");
+    sendConfig("control:flight_without_shell","TRUE");
     send_control_commands();
     //sendComwdg(100);
     //drone_emergency_toggle();
