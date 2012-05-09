@@ -12,4 +12,3 @@ All rights reserved.
 * Yorman Garcia
 * Farhan Shaukat
 
-Please contact us if you would like to use this code, as there are some binary files omitted here that are necessary for functioning. 
