@@ -3,7 +3,7 @@ AR.Drone WayPoint Navigation Senior Project
 
 #File/Folder Information
 
-## /navigation_statemachine
+##/navigation_statemachine
 
 This is where all the navigation code is stored. This folder interfaces the Command library with the Navigation algorithm to make the Drone travel the path. 
 
@@ -23,7 +23,6 @@ This is the main Arduino sketch for the navigation algorithm. Dependencies are r
 
 This is another external library which allows efficient parsing and reading of pertinent information in the GPS sentences delivered by our GPS receiver. This source code was not initially created by us, however it was modified for our needs. It now only receives GPRMC updates to correct the course. The specific code modifications can be found in the commit history of this file.ls
 
-
 ## /ATCommand
 
 This is a folder where we test changes to our command library. The command files here are identical to the navigation_statemachine folder. This is because Arduino doesn't currently support referencing files from different folder's than the sketch folder. 
@@ -38,7 +37,7 @@ Same as in /navigation_statemachine.
 
 ### Streaming.h 
 
-Same as in /navigation_statemachine
+Same as in /navigation_statemachine.
 
 Credits
 -------
