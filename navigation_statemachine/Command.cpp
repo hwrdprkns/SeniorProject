@@ -1,5 +1,4 @@
 #ifndef GAINSPAN
-//define GAINSPAN meaning we are using gainspan wifi adapter
 #define GAINSPAN
 #include "Arduino.h"
 #include "Command.h"
@@ -157,8 +156,7 @@ int Command::start_wifi_connection()
     }
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
-    delay(7000); //need 7 seconds for connection to establish
-	//delay(1000); //if drone already booted, for testing purpose
+	delay(1000); //if drone already booted, for testing purpose
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
 }
@@ -211,7 +209,7 @@ int Command::moveForward_time(unsigned int msec, int speed)
 	for ( unsigned long time = millis() ; (millis() - time) < msec; ) {
         sendComwdg(60);
     }
-    moveForward = makePcmd(1, 0, 0, 0, 0);
+	moveForward = makePcmd(1, 0, 0, 0, 0);
     sendwifi(moveForward);
     return 1;
 }
@@ -243,7 +241,7 @@ int Command::moveUp(float distanceInMeters)
         sendwifi(move);
         //sendComwdg(60);
         delay(80);
-        i = i+0.05;
+        i = i+0.08;
     }
     return 1;
 }
@@ -297,7 +295,6 @@ int Command::moveRight(float distanceInMeters)
     return 1;
 }
 
-//moves up a little bit too. in windy condition the drone tends to lose altitude
 int Command::staticRotate(int yawInDegrees)
 {
     int i = 0;
@@ -307,7 +304,7 @@ int Command::staticRotate(int yawInDegrees)
     sign = (yawInDegrees >= 0) ? 1:-1;
     //(sign*yawInDegrees) is always positive
     while (i < (sign*yawInDegrees) ) {
-        String moveRotate = makePcmd(1, 0, 0, 0.2, (0.3*sign));
+        String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
         sendwifi(moveRotate);
         delay(100);
         i += 16;
@@ -322,15 +319,6 @@ int Command::moveRotate(int degree) {
     while ( degree < -180 ) {degree += 360;}
     sign = (degree >= 0) ? 1:-1;
     //(sign*degree) is always positive
-	// v1
-    /*while (i < (sign*degree) ) {
-		String moveRotate = makePcmd(1, 0, -0.2, 0, (0.3*sign));
-        sendwifi(moveRotate);
-        delay(100);
-        i += 16;
-    }*/
-		
-	//v2
 	String moveRotate = makePcmd(1, 0, -.4, 0, (0.45*sign));
     sendwifi(moveRotate);
 	delay(50);
@@ -358,7 +346,7 @@ void Command::drone_landing() {
 
 int Command::start_s2ip()
 {
-    char temp = 0;
+    char temp;
     //delay(20000); //wait for drone to start
 
     readARsrl();
@@ -410,14 +398,11 @@ int Command::init_drone()
 {
     PCsrl << "I'm initing\r\n";
     sendConfig("general:navdata_demo","TRUE");
-	// seems 1.8 meter max is enough to lose the supersonic sensor, more stable flight may require less altitude
-    sendConfig("control:altitude_max","2000");
+    sendConfig("control:altitude_max","1800");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
     sendConfig("control:flight_without_shell","FALSE");
     send_control_commands();
-    //sendComwdg(100);
-    //drone_emergency_toggle();
     sendFtrim();
     delay(2000); // ftrim() needs 2 seconds to get done
 
@@ -451,23 +436,6 @@ void Command::readARsrl()
         }
     }
 }
-
-
-/*
-   void SrlRead()
-   {
-   if (inService) {
-   PCsrl.println("timer kicked too fast");
-   return;
-   }
-   interrupts();
-   inService = true;
-   while(ARsrl.available()) {
-   unsigned char k = ARsrl.read();
-   store_char(k, &rx_buf);
-   }
-   inService = false;
-   }*/
 
 void read_rx_buf()
 {

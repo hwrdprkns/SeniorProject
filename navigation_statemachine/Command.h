@@ -104,6 +104,7 @@ class Command {
     // send landing command
     void drone_landing();
     
+    // Read serial coming from Drone
     void readARsrl();
     
     int s2ip_running;

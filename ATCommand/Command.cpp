@@ -200,7 +200,7 @@ int Command::moveForward(float distanceInMeters)
     return 1;
 }
 
-int Command::moveForward_time(int msec, int speed)
+int Command::moveForward_time(unsigned int msec, int speed)
 {
 	if ( speed > 100 ) speed = 100;
 	if ( speed < 0 ) speed = 0;
