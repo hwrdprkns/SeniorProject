@@ -57,7 +57,7 @@ Electrical and Computer Engineering Department
 Tufts University
 
 Copyright 2011-2012
-All rights reserved. 
+All rights reserved. No warranty provided or inferred. Use this at your own risk, mis-understanding, or incorrect wiring may render some of your hardware obsolete. We take no responsibility for any damages you incur by using our work.  
 
 * [Taylor H. Perkins](http://about.me/hwrdprkns)
 * Weiyi Zheng
