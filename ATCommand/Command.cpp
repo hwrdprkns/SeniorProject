@@ -156,7 +156,6 @@ int Command::start_wifi_connection()
     }
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
-    //delay(7000); //need 7 seconds for connection to establish
 	delay(1000); //if drone already booted, for testing purpose
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
@@ -320,15 +319,6 @@ int Command::moveRotate(int degree) {
     while ( degree < -180 ) {degree += 360;}
     sign = (degree >= 0) ? 1:-1;
     //(sign*degree) is always positive
-	// v1
-    /*while (i < (sign*degree) ) {
-		String moveRotate = makePcmd(1, 0, -0.2, 0, (0.3*sign));
-        sendwifi(moveRotate);
-        delay(100);
-        i += 16;
-    }*/
-		
-	//v2
 	String moveRotate = makePcmd(1, 0, -.4, 0, (0.45*sign));
     sendwifi(moveRotate);
 	delay(50);
@@ -413,8 +403,6 @@ int Command::init_drone()
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
     sendConfig("control:flight_without_shell","FALSE");
     send_control_commands();
-    //sendComwdg(100);
-    //drone_emergency_toggle();
     sendFtrim();
     delay(2000); // ftrim() needs 2 seconds to get done
 
@@ -448,23 +436,6 @@ void Command::readARsrl()
         }
     }
 }
-
-
-/*
-   void SrlRead()
-   {
-   if (inService) {
-   PCsrl.println("timer kicked too fast");
-   return;
-   }
-   interrupts();
-   inService = true;
-   while(ARsrl.available()) {
-   unsigned char k = ARsrl.read();
-   store_char(k, &rx_buf);
-   }
-   inService = false;
-   }*/
 
 void read_rx_buf()
 {
