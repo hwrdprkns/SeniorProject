@@ -50,7 +50,6 @@ the packet to the AT command receiving port of the Drone.
 It can also obtain packets that the Drone is sending out on the network interface, through modifying 
 iptables on the system (please look at the source code for explanation).
 
-
 Credits
 -------
 
