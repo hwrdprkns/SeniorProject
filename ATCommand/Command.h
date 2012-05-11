@@ -104,7 +104,7 @@ class Command {
     // send landing command
     void drone_landing();
     
-    // Read serial going to Drone
+    // Read serial coming from Drone
     void readARsrl();
     
     int s2ip_running;
@@ -117,7 +117,7 @@ class Command {
      */
     int moveForward(float distanceInMeters);
 	//speed range from 1 to 100
-	int moveForward_time(int msec, int speed);
+	int moveForward_time(unsigned int msec, int speed);
     int moveBackward(float distanceInMeters);
     int moveUp(float distanceInMeters);
     int moveDown(float distanceInMeters);
