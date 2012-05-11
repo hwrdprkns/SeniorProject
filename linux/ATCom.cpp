@@ -1,3 +1,10 @@
+/* attempt to migrate ARduino ATcommand library to linux
+ * has not been tested yet
+ * By Farhan Shaukat
+ * Team Vermillion Millennium Falcon
+ * 5/11/2012
+ */
+
 #include <stdio.h>
 #include <string.h>
 
