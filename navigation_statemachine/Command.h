@@ -116,7 +116,7 @@ class Command {
      */
     int moveForward(float distanceInMeters);
 	//speed range from 1 to 100
-	int moveForward_time(int msec, int speed);
+	int moveForward_time(unsigned int msec, int speed);
     int moveBackward(float distanceInMeters);
     int moveUp(float distanceInMeters);
     int moveDown(float distanceInMeters);

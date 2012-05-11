@@ -39,10 +39,10 @@ void loop()
 
     
 	com.drone_hover(2000);
-	//com.moveForward(1);
+	com.moveForward(1);
 	//com.moveRotate(90);
 	//com.moveForward_time(2,1);
-	com.moveUp(5);
+	//com.moveUp(5);
 	com.drone_hover(2000);
 	//com.moveDown(1);
 	/*com.moveBackward(1);

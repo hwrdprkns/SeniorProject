@@ -202,7 +202,7 @@ int Command::moveForward(float distanceInMeters)
     return 1;
 }
 
-int Command::moveForward_time(int msec, int speed)
+int Command::moveForward_time(unsigned int msec, int speed)
 {
 	if ( speed > 100 ) speed = 100;
 	if ( speed < 0 ) speed = 0;
@@ -358,7 +358,7 @@ void Command::drone_landing() {
 
 int Command::start_s2ip()
 {
-    char temp;
+    char temp = 0;
     //delay(20000); //wait for drone to start
 
     readARsrl();
@@ -414,7 +414,7 @@ int Command::init_drone()
     sendConfig("control:altitude_max","2000");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
-    sendConfig("control:flight_without_shell","TRUE");
+    sendConfig("control:flight_without_shell","FALSE");
     send_control_commands();
     //sendComwdg(100);
     //drone_emergency_toggle();
