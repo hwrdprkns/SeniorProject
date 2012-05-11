@@ -156,7 +156,7 @@ int Command::start_wifi_connection()
     }
     WIFIsrl.println("AT+NCUDP=192.168.1.1,5556");
     readARsrl();
-    delay(1000); //need 1 seconds for connection to establish
+	delay(1000); //if drone already booted, for testing purpose
     WIFIsrl.println("ATE0"); //turn off echo
     return 0;
 }
@@ -200,6 +200,20 @@ int Command::moveForward(float distanceInMeters)
     return 1;
 }
 
+int Command::moveForward_time(int msec, int speed)
+{
+	if ( speed > 100 ) speed = 100;
+	if ( speed < 0 ) speed = 0;
+	String moveForward = makePcmd(1,0, -0.01*speed, 0,0);
+	sendwifi(moveForward);
+	for ( unsigned long time = millis() ; (millis() - time) < msec; ) {
+        sendComwdg(60);
+    }
+	moveForward = makePcmd(1, 0, 0, 0, 0);
+    sendwifi(moveForward);
+    return 1;
+}
+
 int Command::moveBackward(float distanceInMeters)
 {
     float i = 0;
@@ -223,11 +237,11 @@ int Command::moveUp(float distanceInMeters)
     float i = 0;
     String move;
     for ( i = 0; i < distanceInMeters; ) {
-        move = makePcmd(1, 0, 0, 0.9, 0);
+        move = makePcmd(1, 0, 0, 0.99, 0);
         sendwifi(move);
-        sendComwdg(30);
+        //sendComwdg(60);
         delay(80);
-        i = i+0.1;
+        i = i+0.08;
     }
     return 1;
 }
@@ -281,21 +295,38 @@ int Command::moveRight(float distanceInMeters)
     return 1;
 }
 
-int Command::moveRotate(int yawInDegrees)
+int Command::staticRotate(int yawInDegrees)
 {
     int i = 0;
     int sign;
-    while ( yawInDegrees > 180 ) {yawInDegrees -= 360;}
+    while ( yawInDegrees >= 180 ) {yawInDegrees -= 360;}
     while ( yawInDegrees < -180 ) {yawInDegrees += 360;}
-	if ( yawInDegrees >= 0 ) sign = 1;
-    else sign = -1;
+    sign = (yawInDegrees >= 0) ? 1:-1;
     //(sign*yawInDegrees) is always positive
     while (i < (sign*yawInDegrees) ) {
-        String moveRotate = makePcmd(1, 0, 0, 0, (0.4*sign));
+        String moveRotate = makePcmd(1, 0, 0, 0, (0.3*sign));
         sendwifi(moveRotate);
         delay(100);
         i += 16;
     }
+    return 1;
+}
+
+int Command::moveRotate(int degree) {
+    int i = 0;
+    int sign;
+    while ( degree >= 180 ) {degree -= 360;}
+    while ( degree < -180 ) {degree += 360;}
+    sign = (degree >= 0) ? 1:-1;
+    //(sign*degree) is always positive
+	String moveRotate = makePcmd(1, 0, -.4, 0, (0.45*sign));
+    sendwifi(moveRotate);
+	delay(50);
+	while (i < (sign*degree) ) {
+		sendComwdg(60);
+        i += 12;
+    }
+
     return 1;
 }
 
@@ -367,15 +398,13 @@ int Command::init_drone()
 {
     PCsrl << "I'm initing\r\n";
     sendConfig("general:navdata_demo","TRUE");
-    sendConfig("control:altitude_max","3000");
+    sendConfig("control:altitude_max","1800");
     sendConfig("control:euler_angle_max","0.35"); //between 0 and 0.52
     sendConfig("control:outdoor","FALSE"); // keep this false to maintain the flight param consistant
     sendConfig("control:flight_without_shell","FALSE");
     send_control_commands();
-    //sendComwdg(100);
-    //drone_emergency_toggle();
     sendFtrim();
-    delay(50);
+    delay(2000); // ftrim() needs 2 seconds to get done
 
     return 1;
 }
@@ -407,23 +436,6 @@ void Command::readARsrl()
         }
     }
 }
-
-
-/*
-   void SrlRead()
-   {
-   if (inService) {
-   PCsrl.println("timer kicked too fast");
-   return;
-   }
-   interrupts();
-   inService = true;
-   while(ARsrl.available()) {
-   unsigned char k = ARsrl.read();
-   store_char(k, &rx_buf);
-   }
-   inService = false;
-   }*/
 
 void read_rx_buf()
 {

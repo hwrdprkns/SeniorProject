@@ -1,12 +1,17 @@
 /* s2ip.c
  * initialize the udp port and socket and listen
  * used drs003 at2so.c as reference
+ *
+ * Written by Weiyi Zheng
+ * Team Vermillion, Millennium Falcon
+ * 03/25/2012
  */
 
 #include "init_ip.h"
 
 #define	MAX(a,b)	((a)>(b)?(a):(b))
 
+/* global flags for programs state */
 int verbose = 0;
 int navflag = 0; /* navdata flag */
 int srlflag = 1; /* serial terminal flag */
@@ -48,7 +53,7 @@ struct global_data{
 	char navbuf[NAV_BUF_SIZE];
 } gld;
 
-// Read in tty command
+// Read in tty command (terminal)
 void Readtty() {
 	int nchar;
 	char buf[MAX_MESG];
@@ -85,7 +90,9 @@ void Readtty() {
 	}
 }
 
-// Read rc_sock
+/* Receive packets from PT_SD socket
+ * and store in rcbuf
+ */
 void Readrc() {
 	int nchar;
 	char buf[MAX_BUF];
@@ -122,7 +129,7 @@ void Readrc() {
 	//fprintf(stderr,"Readrd():buff reads %d :%s\n", nchar, buf);
 }
 
-/* send AT command to PT_AT */
+/* send AT command from atbuf to PT_AT */
 void SendAT() {
 	int strn_len = strnlen(gld.atbuf, MAX_MESG);
     if (verbose) { 
@@ -134,20 +141,19 @@ void SendAT() {
 	gld.at_n = 0;
 }
 
-/* send packet to serial/tty */
+/* send packet to serial/tty (terminal) */
 void Sendrc() {
 	int strn_len = strnlen(gld.rcbuf, MAX_BUF);
 
 	if ( write(gld.tty, gld.rcbuf, strn_len) <= 0 ) {
 		perror("send rc error");
 	}
-
 	bzero(&gld.rcbuf, sizeof(gld.rcbuf));
 	gld.rc_n = 0;
 }
 
-/* send raw nav data packet to serial/tty */
-// header is "NAV[space]"
+/* send raw nav data stream to serial/tty */
+// string header is curretly defined as "NAV[space]"
 void SendNav() {
     //need to implement handshake on arduino
 	int strn_len = gld.navbuf_n; 
@@ -157,27 +163,30 @@ void SendNav() {
 	if ( write(gld.tty, gld.navbuf, strn_len) <= 0 ) {
 		perror("send rc error");
 	}
-
 	bzero(&gld.navbuf, sizeof(gld.navbuf));
 	gld.navbuf_n = 0;
 }
 
-// start up nav data packet
+/* start up nav data packet output on Drone 
+ * by sending 1 to PT_NAV
+ * binary of the packet content: 00 00 00 01
+ */
 void init_nav() {
-	//need a clean up on iptables rule
+	//make an iptables rule to reroute the NAV packet to localhost
 	system("iptables -t nat -A OUTPUT -p UDP --sport 5554 -j DNAT --to 127.0.0.1:9890");
-
 	int navsignal = 1;
 	sendto(gld.sd_sock, (char*)&navsignal, sizeof(int), 0, (struct sockaddr *)&gld.navp, sizeof(gld.navp));
 }
 
+/* read in Nav data from PT_SD
+ * stores it in the navbuf
+ */
 void ReadNav() {
 	int nchar;
 	char buf[NAV_BUF_SIZE];
 	struct sockaddr_in recv_addr;
 	socklen_t recv_addrlen;
     int sp;
-
 
 	recv_addrlen = sizeof(recv_addr);
 	memset(&recv_addr, 0, sizeof(recv_addr));
@@ -212,6 +221,7 @@ void ReadNav() {
     }
 }
 
+/* handler for Ctrl C */
 void sig_handler(int sig) {
     if (verbose) {
         fprintf(stderr,"SIGINT caught\n");
@@ -219,10 +229,10 @@ void sig_handler(int sig) {
     exit(0);
 }
 
+/* cleanup function upon exit. close all opened sockets */
 void cleanup(void)
 {
 	system("iptables -F -t nat");
-
 	int	s;
 	if ((s = gld.tty) > 0) {
 		gld.tty = -1;
@@ -317,6 +327,7 @@ int main(int argc, char **argv) {
     if (sigaction(SIGINT, &sa, NULL) == -1 ) 
         perror("sigaction error");
 
+	/* iptables configuration */
 	if (IPTABLE) {
 		/* prevent iDev highjacking of drone command port */
 		system("iptables -F");						/* flush all tables */
@@ -336,6 +347,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	/* navdata initialization */
 	if (navflag) {
 		init_nav();
 	}
@@ -349,11 +361,12 @@ int main(int argc, char **argv) {
     tv.tv_sec = 0;
     tv.tv_usec = 300000;
 	select(0,0,0,0,&tv);	/* let Arduino digest commandline echo */
-
-    write(gld.tty, "\002",1); /* send start signal */
+	/*choice of "\002" is arbitrary */
+    write(gld.tty, "\002",1); /* send start signal to arduino */
     running = 1;
 
     while(running) {
+		/* LED animation */
         if (ledflag) {
             strn_len = strlen(LA);
             /*  sending out packets */
@@ -365,7 +378,6 @@ int main(int argc, char **argv) {
 
 		/* read in packets */
 		readfd = gld.pd;
-
 		tv.tv_usec = TOUT_USEC;
 		tv.tv_sec = TOUT_SEC;
 		n = select(gld.pdmax,&readfd,0,0, &tv);
@@ -395,17 +407,16 @@ int main(int argc, char **argv) {
         if (ledflag) {
             sleep(LED_SLEEP);
         }
-
         if ( gld.at_n > 0 ) {
             SendAT();
         }
         if ( gld.rc_n >0 && navflag == 1 ) {
+			// not used
             //Sendrc();
         }
         if (gld.navbuf_n > 0 && navflag == 1) {
             SendNav();
         }
-
     }
 	return errno;
 }

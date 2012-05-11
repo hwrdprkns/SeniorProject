@@ -33,21 +33,26 @@
 #define MAX_MESG 1024 /* Drone command length limit */
 #define MAX_BUF 10*1024
 #define NAV_BUF_SIZE 2048
-#define TOUT_USEC 100000 /* select: timeout usec */
-#define TOUT_SEC 0
+
 #define TRUE 1
 #define FALSE 0
 
 /* Network configuration */
-#define IPTABLE 0   //use iptables to set up NAT in linux, prevent iOS hijacking
+/* set 1 to use iptables to set up NAT filter in linux
+ * limite connection to origin from localhost
+ * prevent iOS hijacking
+ * normally you don't need it
+ */
+#define IPTABLE 0   
 
 #define PT_AT 5556 //destination port of AT command
-//#define PT_AT 9891
 #define PT_NAV 5554 //navdate port
 
-//only works if IPTABLE == 1
-#define PT_SD 9890/* program sending port, any unused ones are ok. remember to change system() in main() too. */
-//#define PT_RC 9891/* program receiving port */
+/* program sending port, any unused ones are ok. 
+ * remember to change in the IPTABLES rules in main() too. */
+#define PT_SD 9890
 
 /* program constant */
 #define LED_SLEEP 3 //sleep duration between each LED light
+#define TOUT_USEC 100000 /* select: timeout usec */
+#define TOUT_SEC 0

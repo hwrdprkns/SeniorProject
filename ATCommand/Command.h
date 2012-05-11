@@ -104,6 +104,7 @@ class Command {
     // send landing command
     void drone_landing();
     
+    // Read serial going to Drone
     void readARsrl();
     
     int s2ip_running;
@@ -115,12 +116,15 @@ class Command {
      * return: 1
      */
     int moveForward(float distanceInMeters);
+	//speed range from 1 to 100
+	int moveForward_time(int msec, int speed);
     int moveBackward(float distanceInMeters);
     int moveUp(float distanceInMeters);
     int moveDown(float distanceInMeters);
     int moveLeft(float distanceInMeters);
     int moveRight(float distanceInMeters);
-    int moveRotate(int yawInDegrees);
+    int moveRotate(int degree);
+	int staticRotate(int yawInDegrees);
     
     // can only call after wifi's connection established and CID is given as 0
     void sendwifi(String s);
